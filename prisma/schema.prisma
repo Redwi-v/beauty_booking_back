@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int    @id @default(autoincrement())
+  hash  String
+  salt  String
+  email String @unique
+
+  role Role? @default(SALON_OWNER)
+
+  SalonOwnerAccount SalonOwnerAccount? 
+}
+
+enum Role {
+  ADMIN
+  SALON_OWNER
+  MASTER
+  CLIENT
+}
+
+model SalonOwnerAccount {
+  id Int @id @default(autoincrement())
+
+  owner   User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId Int  @unique 
+
+  salons Salon[]
+
+  name     String
+  lastName String
+
+}
+
+model Salon {
+  salonId             Int                @id @default(autoincrement())
+  SalonOwnerAccount   SalonOwnerAccount? @relation(fields: [salonOwnerAccountId], references: [id], onDelete: Cascade)
+  salonOwnerAccountId Int
+
+  name    String
+  logoUrl String?
+
+  isOpen Boolean? @default(false)
+
+  description String @default("")
+
+  branches      SalonBranch[]
+  MasterAccount MasterAccount[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  MasterService MasterService[]
+}
+
+model SalonBranch {
+  id Int @id @default(autoincrement())
+
+  Salon   Salon? @relation(fields: [salonId], references: [salonId], onDelete: Cascade)
+  salonId Int?
+
+  address Address?
+
+  MasterAccount   MasterAccount[]
+  MasterService   MasterService?  @relation(fields: [masterServiceId], references: [id], onDelete: Cascade)
+  masterServiceId Int?
+}
+
+model Address {
+  id Int @id @default(autoincrement())
+
+  city    String
+  address String
+
+  salonBranch SalonBranch @relation(fields: [salonBranchId], references: [id], onDelete: Cascade)
+
+  salonBranchId Int @unique
+}
+
+model MasterAccount {
+  id Int @id @default(autoincrement())
+
+  name     String
+  lastName String
+
+  email String
+
+
+  salon       Salon?       @relation(fields: [salonId], references: [salonId], onDelete: Cascade)
+  salonBranch SalonBranch? @relation(fields: [salonBranchId], references: [id], onDelete: Cascade)
+
+  salonId       Int?
+  salonBranchId Int?
+
+  MasterService MasterService[]
+
+  rating  Int?     @default(0)
+  reviews Review[]
+
+  speciality String
+  about      String?
+
+  avatar String?
+
+  canChangeSchedule Boolean? @default(false)
+
+  telegramId String
+}
+
+model MasterService {
+  id Int @id @default(autoincrement())
+
+  salon Salon @relation(fields: [salonId], references: [salonId], onDelete: Cascade)
+
+  salonbranches SalonBranch[]
+  masters       MasterAccount[]
+
+  price Int
+  time  Int
+
+  name String
+
+  tagName String
+  Tag     Tag    @relation(fields: [tagName], references: [tagName], onDelete: Cascade)
+  salonId Int
+}
+
+model Review {
+  id Int @id @default(autoincrement())
+
+  MasterAccount   MasterAccount? @relation(fields: [masterAccountId], references: [id])
+  masterAccountId Int?
+
+  text  String
+  stars Int
+}
+
+model Tag {
+  tagName String @unique
+
+  services MasterService[]
+}
