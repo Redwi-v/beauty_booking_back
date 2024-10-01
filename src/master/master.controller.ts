@@ -12,12 +12,12 @@ import {
 } from '@nestjs/common';
 import { MasterService } from './master.service';
 import {
-  addServiceDto,
   CreateMasterDto,
-  UpdateServiceDto,
+  GetFreeTimeDto,
+  GetMastersParams,
 } from './dto/create-master.dto';
 import { UpdateMasterDto } from './dto/update-master.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiProperty, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('master')
 @Controller('master')
@@ -33,13 +33,10 @@ export class MasterController {
   }
 
   @Get()
-  findAll(
-    @Query('salonId') salonId?: string,
-    @Query('search') search?: string,
-  ) {
-    if (!salonId) throw new NotFoundException();
+  findAll(@Query() params?: GetMastersParams) {
+    if (!params?.salonId) throw new NotFoundException();
 
-    return this.masterService.findAll(+salonId, search);
+    return this.masterService.findAll(params);
   }
 
   @Get(':id')
@@ -49,6 +46,9 @@ export class MasterController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMasterDto: UpdateMasterDto) {
+    console.log(id);
+    console.log(updateMasterDto);
+
     return this.masterService.update(+id, updateMasterDto);
   }
 
@@ -57,13 +57,9 @@ export class MasterController {
     return this.masterService.remove(+id);
   }
 
-  @Post('update-service')
-  updateService(@Body() addServiceData: UpdateServiceDto) {
-    return this.masterService.updateService(addServiceData);
-  }
-
-  @Post('delete-service/:id')
-  deleteService(@Param('id') id: string) {
-    return this.masterService.removerService(+id);
+  @Get('/time/freeTime')
+  getFreeTime(@Query() params: GetFreeTimeDto) {
+    return this.masterService.getFreeTime(params);
   }
 }
+

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateServiceDto } from './dto/create-service.dto';
+import { CreateServiceDto, FindAllServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { DbService } from 'src/db/db.service';
 import { connect } from 'http2';
@@ -78,40 +78,64 @@ export class ServicesService {
     }
   }
 
-  async findAll(tagName?: string, search?: string) {
+  async findAll({ tagName, search, masterId }: FindAllServiceDto) {
+    let searchParams: any = {};
+    if (search) {
+      searchParams = {
+        services: {
+          some: {
+            name: { contains: search },
+          },
+        },
+      };
+    }
+
+    let tagParams: any = {};
+    if (tagName) {
+      tagParams = {
+        tagName: {
+          equals: tagName,
+        },
+      };
+    }
+
+    let masterParams: any = {};
+    if (masterId) {
+      masterParams = { some: { id: { equals: Number(masterId) } } };
+    }
+
     try {
-      if (!tagName && !search) {
-        const res = await this.db.tag.findMany({
-          include: { services: true, _count: true },
-        });
-
-        return { list: res };
-      }
-
       const res = await this.db.tag.findMany({
         where: {
-          OR: [
-            {
-              tagName: {
-                equals: tagName,
-              },
-            },
+          AND: [
             {
               services: {
                 some: {
-                  name: { contains: search },
+                  masters: masterParams,
                 },
               },
+            },
+            {
+              OR: [searchParams, tagParams],
             },
           ],
         },
         include: {
-          services: true,
+          services: {
+            where: {
+              AND: [
+                { masters: masterParams },
+                { name: search ? { contains: search } : {} },
+              ],
+            },
+          },
         },
       });
 
       return { list: res };
     } catch (error) {
+      console.log(error);
+
       throw new BadRequestException('Не удалось получить список услуг');
     }
   }

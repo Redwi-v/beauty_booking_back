@@ -33,4 +33,9 @@ export class FindAllServiceDto {
     required: false,
   })
   search?: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  masterId?: number;
 }

@@ -14,6 +14,7 @@ import { SalonBranchModule } from './salon-branch/salon-branch.module';
 import { MasterModule } from './master/master.module';
 import { DservicesModule } from './dservices/dservices.module';
 import { ServicesModule } from './services/services.module';
+import { BookingModule } from './booking/booking.module';
 
 
 const sessions = new LocalSession({database: 'sessions_db.json'})
@@ -44,7 +45,9 @@ const sessions = new LocalSession({database: 'sessions_db.json'})
 
     DservicesModule,
 
-    ServicesModule
+    ServicesModule,
+
+    BookingModule
 
   ],
 

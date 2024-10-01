@@ -23,11 +23,11 @@ import { diskStorage } from 'multer';
 import { editFileName, imageFileFilter } from 'src/utils/file-upload.utils';
 
 @Controller('salons')
-@UseGuards(AuthGuard)
 @ApiTags('salons')
 export class SalonsController {
   constructor(private readonly salonsService: SalonsService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -47,6 +47,7 @@ export class SalonsController {
     return this.salonsService.create(createSalonBody, session, file?.filename);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   findAll(
     @SessionInfo() session: GetSessionInfoDto,
@@ -60,6 +61,7 @@ export class SalonsController {
     return this.salonsService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -79,6 +81,7 @@ export class SalonsController {
     return this.salonsService.update(+id, updateSalonDto, file?.filename);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.salonsService.remove(+id);

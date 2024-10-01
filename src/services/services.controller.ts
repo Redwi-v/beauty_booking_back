@@ -16,23 +16,19 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 @Controller('services')
-@UseGuards(AuthGuard)
 @ApiTags('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createServiceDto: CreateServiceDto) {
     return this.servicesService.create(createServiceDto);
   }
 
   @Get()
-  @ApiQuery({ name: 'search', type: FindAllServiceDto })
-  findAll(
-    @Query('search') search?: string,
-    @Query('tagName') tagName?: string,
-  ) {
-    return this.servicesService.findAll(tagName, search);
+  findAll(@Query() params: FindAllServiceDto) {
+    return this.servicesService.findAll(params);
   }
 
   @Get(':id')
@@ -40,21 +36,25 @@ export class ServicesController {
     return this.servicesService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
     return this.servicesService.update(+id, updateServiceDto);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.servicesService.remove(+id);
   }
 
+  @UseGuards(AuthGuard)
   @Post('/tag/:tagName')
   createTag(@Param('tagName') tagName: string) {
     return this.servicesService.createTag(tagName);
   }
 
+  @UseGuards(AuthGuard)
   @Delete('/tag/:tagName')
   deleteTag(@Param('tagName') tagName: string) {
     return this.servicesService.deleteTag(tagName);

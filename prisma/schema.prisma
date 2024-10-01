@@ -21,7 +21,7 @@ model User {
 
   role Role? @default(SALON_OWNER)
 
-  SalonOwnerAccount SalonOwnerAccount? 
+  SalonOwnerAccount SalonOwnerAccount?
 }
 
 enum Role {
@@ -35,13 +35,12 @@ model SalonOwnerAccount {
   id Int @id @default(autoincrement())
 
   owner   User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId Int  @unique 
+  ownerId Int  @unique
 
   salons Salon[]
 
   name     String
   lastName String
-
 }
 
 model Salon {
@@ -63,6 +62,7 @@ model Salon {
   updatedAt DateTime @default(now()) @updatedAt
 
   MasterService MasterService[]
+  Booking       Booking[]
 }
 
 model SalonBranch {
@@ -76,6 +76,7 @@ model SalonBranch {
   MasterAccount   MasterAccount[]
   MasterService   MasterService?  @relation(fields: [masterServiceId], references: [id], onDelete: Cascade)
   masterServiceId Int?
+  Booking         Booking[]
 }
 
 model Address {
@@ -97,14 +98,13 @@ model MasterAccount {
 
   email String
 
-
   salon       Salon?       @relation(fields: [salonId], references: [salonId], onDelete: Cascade)
   salonBranch SalonBranch? @relation(fields: [salonBranchId], references: [id], onDelete: Cascade)
 
   salonId       Int?
   salonBranchId Int?
 
-  MasterService MasterService[]
+  masterService MasterService[]
 
   rating  Int?     @default(0)
   reviews Review[]
@@ -117,6 +117,12 @@ model MasterAccount {
   canChangeSchedule Boolean? @default(false)
 
   telegramId String
+  Booking    Booking[]
+
+  startShift DateTime
+  endShift   DateTime
+
+  workingDays weekDays[]
 }
 
 model MasterService {
@@ -132,9 +138,21 @@ model MasterService {
 
   name String
 
-  tagName String
-  Tag     Tag    @relation(fields: [tagName], references: [tagName], onDelete: Cascade)
-  salonId Int
+  tagName   String
+  Tag       Tag      @relation(fields: [tagName], references: [tagName], onDelete: Cascade)
+  salonId   Int
+  Booking   Booking? @relation(fields: [bookingId], references: [id])
+  bookingId Int?
+}
+
+enum weekDays {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
 }
 
 model Review {
@@ -151,4 +169,42 @@ model Tag {
   tagName String @unique
 
   services MasterService[]
+}
+
+enum BookingStatuses {
+  ACTIVE
+
+  CANCEL_CLIENT
+  CANCEL_MASTER
+  CANCEL_SALON
+  CANCEL_ADMIN
+
+  OMITTED
+  VISITED
+}
+
+model Booking {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  master   MasterAccount   @relation(fields: [masterAccountId], references: [id])
+  services MasterService[]
+
+  time            DateTime
+  masterAccountId Int
+
+  status BookingStatuses @default(ACTIVE)
+
+  clientTelegramId String
+  clientName       String
+  clientPhone      String
+  clientComment    String
+
+  salon Salon @relation(fields: [salonId], references: [salonId])
+
+  salonId       Int
+  salonBranch   SalonBranch @relation(fields: [salonBranchId], references: [id])
+  salonBranchId Int
 }
