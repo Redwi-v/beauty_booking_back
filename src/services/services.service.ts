@@ -2,7 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateServiceDto, FindAllServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { DbService } from 'src/db/db.service';
-import { connect } from 'http2';
+import * as moment from 'moment';
+import { getTimeSlots } from 'src/utils/get-time-steps';
+import { roundTime } from 'src/utils/round-time';
 
 @Injectable()
 export class ServicesService {
@@ -78,8 +80,58 @@ export class ServicesService {
     }
   }
 
-  async findAll({ tagName, search, masterId }: FindAllServiceDto) {
+  async findAll({ tagName, search, masterId, dateAndTime }: FindAllServiceDto) {
     let searchParams: any = {};
+
+    if (dateAndTime && masterId) {
+      return await this.db.masterAccount.findUnique({
+        where: {
+          id: +masterId,
+        },
+        include: {
+          Booking: true,
+          masterService: true,
+        },
+      });
+
+      // if (!activeMaster) throw new BadRequestException();
+
+      // const bookingToday = activeMaster.Booking.filter((booking) => {
+      //   return (
+      //     moment(booking.time).format('DD.MM.YYYY') ===
+      //     moment(dateAndTime).format('DD.MM.YYYY')
+      //   );
+      // });
+
+      // const startShift = moment(activeMaster.startShift);
+      // const endShift = moment(activeMaster.endShift);
+
+      // let timeSteps = getTimeSlots(startShift.toDate(), endShift.toDate());
+
+      // bookingToday.forEach((item) => {
+      //   let endTime = moment(item.time);
+
+      //   activeMaster.masterService.forEach((service) => {
+      //     endTime.add({ minutes: service.time });
+      //   });
+
+      //   const startIndex = timeSteps.findIndex(
+      //     (value) => value === roundTime(moment(item.time).format('HH:mm')),
+      //   );
+      //   const endIndex = timeSteps.findIndex(
+      //     (value) => value === roundTime(endTime.format('HH:mm')),
+      //   );
+
+      //   timeSteps = timeSteps.filter((_, index) => {
+      //     return index < startIndex || index > endIndex;
+      //   });
+      // });
+
+      // console.log(moment(dateAndTime).format('HH:mm'));
+
+      // console.log(timeSteps);
+    }
+
     if (search) {
       searchParams = {
         services: {
@@ -111,7 +163,7 @@ export class ServicesService {
             {
               services: {
                 some: {
-                  masters: masterParams,
+                  AND: [{ masters: masterParams }, {}],
                 },
               },
             },

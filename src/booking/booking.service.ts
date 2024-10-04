@@ -85,6 +85,10 @@ export class BookingService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} booking`;
+    return this.db.booking.delete({
+      where: {
+        id,
+      },
+    });
   }
 }

@@ -38,4 +38,10 @@ export class FindAllServiceDto {
     required: false,
   })
   masterId?: number;
+
+  @ApiProperty({
+    required: false,
+    example: new Date(),
+  })
+  dateAndTime?: Date;
 }

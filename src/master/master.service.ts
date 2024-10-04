@@ -10,6 +10,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { Prisma, weekDays } from '@prisma/client';
 import * as moment from 'moment';
 import { getTimeSlots } from 'src/utils/get-time-steps';
+import { roundTime } from 'src/utils/round-time';
 
 @Injectable()
 export class MasterService {
@@ -111,13 +112,12 @@ export class MasterService {
     let whereParams: Prisma.MasterAccountWhereInput = {
       AND: whereParamsAnd,
     };
-
     // поиск по дате и времени
     if (date) {
       const FindDate = new Date(date);
       const day = FindDate.getDay();
 
-      const weekDay = Object.keys(weekDays)[day] as weekDays;
+      const weekDay = moment().day(day).format('dddd') as weekDays;
 
       whereParams = {
         AND: [
@@ -126,7 +126,7 @@ export class MasterService {
             AND: [
               {
                 workingDays: {
-                  hasSome: [weekDay],
+                  has: weekDay,
                 },
               },
             ],
@@ -207,7 +207,14 @@ export class MasterService {
   findOne(id: number) {
     return this.db.masterAccount.findUnique({
       where: { id },
-      include: { masterService: true, Booking: true },
+      include: {
+        masterService: true,
+        Booking: {
+          include: {
+            services: true,
+          },
+        },
+      },
     });
   }
 
@@ -311,6 +318,48 @@ export class MasterService {
   async getFreeTime({ date, masterId, servicesIdList }: GetFreeTimeDto) {
     const weekDay = moment(date).format('dddd') as weekDays;
 
+    if (!masterId || !servicesIdList) {
+      const masters = await this.db.masterAccount.findMany({
+        where: {
+          workingDays: {
+            has: weekDay,
+          },
+        },
+      });
+
+      let startTime: string = '',
+        endTime: string = '';
+
+      masters.forEach((master, index) => {
+        const start = moment(master.startShift).format('HH:mm');
+        const end = moment(master.endShift).format('HH:mm');
+
+        console.log(`${start} - ${end}`);
+
+        if (index === 0) {
+          startTime = start;
+          endTime = end;
+          return;
+        }
+
+        startTime = getMaxTime(startTime, start)[0];
+        endTime = getMaxTime(endTime, end)[1];
+      });
+
+      const startDate = moment()
+        .hours(+startTime.split(':')[0])
+        .minutes(+startTime.split(':')[1])
+        .toDate();
+      const endDate = moment()
+        .hours(+endTime.split(':')[0])
+        .minutes(+endTime.split(':')[1])
+        .toDate();
+
+      const freeTime = getTimeSlots(startDate, endDate);
+
+      return { freeTime };
+    }
+
     const master = await this.db.masterAccount.findUnique({
       where: {
         id: +masterId,
@@ -399,7 +448,6 @@ export class MasterService {
       )
         return;
 
-
       freeTime.push(step);
     });
 
@@ -407,17 +455,22 @@ export class MasterService {
   }
 }
 
-function roundTime(time: string): string {
-  let [hours, minutes] = time.split(':');
+function getMaxTime(time1: string, time2: string): [string, string] {
+  const [h1, m1] = time1.split(':').map((s) => +s);
+  const [h2, m2] = time2.split(':').map((s) => +s);
 
-  if (minutes === '30' || minutes === '00') return `${hours}:${minutes}`;
-
-  if (+minutes > 30) {
-    const checkedHours =
-      +hours + 1 >= 24 ? '00' : +hours + 1 > 10 ? +hours + 1 : +hours + 1;
-
-    return `${checkedHours}:00`;
+  if (h1 * 60 + m1 > h2 * 60 + m2) {
+    return [time2, time1];
+  } else if (h1 * 60 + m1 < h2 * 60 + m2) {
+    return [time1, time2];
+  } else {
+    if (m1 >= m2) {
+      return [time2, time1];
+    } else {
+      return [time1, time2];
+    }
   }
-
-  return `${hours}:30`;
 }
+
+
+

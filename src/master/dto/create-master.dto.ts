@@ -128,11 +128,13 @@ export class GetFreeTimeDto {
 
   @ApiProperty({
     example: 1,
+    required: false,
   })
-  masterId: number;
+  masterId?: number;
 
   @ApiProperty({
     example: ['1', '2'],
+    required: false,
   })
-  servicesIdList: string[];
+  servicesIdList?: string[];
 }
