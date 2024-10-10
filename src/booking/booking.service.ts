@@ -3,10 +3,16 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { DbService } from 'src/db/db.service';
 import { connect } from 'http2';
+import { InjectBot } from 'nestjs-telegraf';
+import { Context, Telegraf } from 'telegraf';
+import { AppService } from 'src/app.service';
 
 @Injectable()
 export class BookingService {
-  constructor(private db: DbService) {}
+  constructor(
+    private db: DbService,
+    @InjectBot() private readonly bot: Telegraf<Context>,
+  ) {}
 
   async create(createBookingDto: CreateBookingDto) {
     try {

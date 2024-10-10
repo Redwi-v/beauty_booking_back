@@ -88,7 +88,14 @@ export class MasterService {
   }
 
   async findAll(params: GetMastersParams) {
-    const { salonId = 1, search, time, date, servicesIdList } = params;
+    const { salonId = 1, search, time, date } = params;
+
+    let { servicesIdList } = params;
+    servicesIdList = Array.isArray(servicesIdList)
+      ? servicesIdList
+      : servicesIdList
+        ? [servicesIdList]
+        : [];
 
     const whereParamsAnd = [
       { salon: { salonId: +salonId } },
@@ -98,13 +105,6 @@ export class MasterService {
           { name: { contains: search } },
           { telegramId: { contains: search } },
           { email: { contains: search } },
-          {
-            masterService: {
-              some: {
-                id: { in: servicesIdList?.map((id) => +id) },
-              },
-            },
-          },
         ],
       },
     ];
@@ -198,6 +198,21 @@ export class MasterService {
       });
     }
 
+    if (servicesIdList) {
+      masters = masters.filter((master) => {
+        if (!Array.isArray(servicesIdList)) return master;
+        let allId = [...servicesIdList].map((id) => +id);
+
+        master.masterService.forEach((service) => {
+          if (allId.includes(service.id)) {
+            allId = allId.filter((id) => id !== service.id);
+          }
+        });
+
+        if (allId.length === 0) return master;
+      });
+    }
+
     return {
       masters,
       mastersCount,
@@ -218,7 +233,7 @@ export class MasterService {
     });
   }
 
-  async update(id: number, updateMasterDto: UpdateMasterDto) {
+  async update(id: number, updateMasterDto: UpdateMasterDto, avatarUrl?: string) {
     const {
       canChangeSchedule,
       email,
@@ -233,6 +248,7 @@ export class MasterService {
       endShift,
       workingDays,
     } = updateMasterDto;
+    console.log(avatarUrl);
 
     const masterServices = servicesIdArray?.map((id) => ({
       id,
@@ -302,6 +318,7 @@ export class MasterService {
         workingDays,
         endShift,
         name,
+        avatar: avatarUrl,
         telegramId,
         ...additionally,
       },
@@ -396,8 +413,6 @@ export class MasterService {
         endTime.add({ minutes: service.time });
       });
 
-      console.log(endTime.format('HH:mm'));
-      console.log(moment(booking.time).format('HH:mm'));
 
       const startIndex = timeSteps.findIndex(
         (value) => value === roundTime(moment(booking.time).format('HH:mm')),
@@ -453,6 +468,22 @@ export class MasterService {
 
     return { freeTime };
   }
+
+  async getByTelegramId (telegramId: string | number ) {
+    return this.db.masterAccount.findUnique({
+      where: {
+        telegramId: String(telegramId)
+      },
+      include: {
+        Booking: true,
+        masterService: true,
+        reviews: true,
+        salon: true,
+        salonBranch: true
+      }
+    })
+  }
+
 }
 
 function getMaxTime(time1: string, time2: string): [string, string] {

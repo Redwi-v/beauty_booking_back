@@ -9,6 +9,7 @@ import {
   Query,
   NotFoundException,
   UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { MasterService } from './master.service';
 import {
@@ -18,6 +19,9 @@ import {
 } from './dto/create-master.dto';
 import { UpdateMasterDto } from './dto/update-master.dto';
 import { ApiProperty, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { editFileName, imageFileFilter } from 'src/utils/file-upload.utils';
 
 @ApiTags('master')
 @Controller('master')
@@ -45,11 +49,21 @@ export class MasterController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMasterDto: UpdateMasterDto) {
-    console.log(id);
-    console.log(updateMasterDto);
-
-    return this.masterService.update(+id, updateMasterDto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  update(
+    @Param('id') id: string,
+    @Body() updateMasterDto: UpdateMasterDto,
+    @UploadedFile() file: { originalname: string; filename?: string },
+  ) {
+    return this.masterService.update(+id, updateMasterDto, file?.filename);
   }
 
   @Delete(':id')
@@ -60,6 +74,11 @@ export class MasterController {
   @Get('/time/freeTime')
   getFreeTime(@Query() params: GetFreeTimeDto) {
     return this.masterService.getFreeTime(params);
+  }
+
+  @Get('/telegram/:id')
+  getOneByTelegramId(@Param('id') id: string) {
+    return this.masterService.getByTelegramId(id);
   }
 }
 

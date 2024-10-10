@@ -19,5 +19,5 @@ export class PaymentController {
   @Post('pay')
   pay(@Body() body: AddressDto) {
     return this.paymentService.pay(body.returnUrl);
-  }
+  } 
 }

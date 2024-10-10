@@ -116,7 +116,7 @@ model MasterAccount {
 
   canChangeSchedule Boolean? @default(false)
 
-  telegramId String
+  telegramId String @unique()
   Booking    Booking[]
 
   startShift DateTime

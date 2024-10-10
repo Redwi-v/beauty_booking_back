@@ -117,7 +117,7 @@ export class GetMastersParams {
     required: false,
     example: ['1', '2'],
   })
-  servicesIdList?: string[];
+  servicesIdList?: string[] | string;
 }
 
 export class GetFreeTimeDto {
