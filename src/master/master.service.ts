@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   CreateMasterDto,
+  GetBookingByDate,
   GetFreeTimeDto,
   GetMastersParams,
 } from './dto/create-master.dto';
@@ -11,6 +12,7 @@ import { Prisma, weekDays } from '@prisma/client';
 import * as moment from 'moment';
 import { getTimeSlots } from 'src/utils/get-time-steps';
 import { roundTime } from 'src/utils/round-time';
+import { time } from 'console';
 
 @Injectable()
 export class MasterService {
@@ -220,20 +222,33 @@ export class MasterService {
   }
 
   findOne(id: number) {
-    return this.db.masterAccount.findUnique({
-      where: { id },
-      include: {
-        masterService: true,
-        Booking: {
-          include: {
-            services: true,
+    try {
+      return this.db.masterAccount.findUnique({
+        where: { id },
+        include: {
+          masterService: true,
+          Booking: {
+            include: {
+              services: true,
+            },
+          },
+          salonBranch: {
+            include: {
+              address: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  async update(id: number, updateMasterDto: UpdateMasterDto, avatarUrl?: string) {
+  async update(
+    id: number,
+    updateMasterDto: UpdateMasterDto,
+    avatarUrl?: string,
+  ) {
     const {
       canChangeSchedule,
       email,
@@ -313,10 +328,14 @@ export class MasterService {
         lastName,
         speciality,
 
-        startShift,
+        startShift:
+          typeof startShift === 'string' ? new Date(startShift) : startShift,
         //@ts-ignore
-        workingDays,
-        endShift,
+        workingDays: Array.isArray(workingDays)
+          ? workingDays
+          : //@ts-ignore
+            workingDays.split(','),
+        endShift: typeof endShift === 'string' ? new Date(endShift) : endShift,
         name,
         avatar: avatarUrl,
         telegramId,
@@ -413,7 +432,6 @@ export class MasterService {
         endTime.add({ minutes: service.time });
       });
 
-
       const startIndex = timeSteps.findIndex(
         (value) => value === roundTime(moment(booking.time).format('HH:mm')),
       );
@@ -469,21 +487,57 @@ export class MasterService {
     return { freeTime };
   }
 
-  async getByTelegramId (telegramId: string | number ) {
+  async getByTelegramId(telegramId: string | number) {
     return this.db.masterAccount.findUnique({
       where: {
-        telegramId: String(telegramId)
+        telegramId: String(telegramId),
       },
       include: {
         Booking: true,
         masterService: true,
         reviews: true,
         salon: true,
-        salonBranch: true
-      }
-    })
+        salonBranch: {
+          include: {
+            address: true,
+          },
+        },
+      },
+    });
   }
 
+  async getBookingByDate(params: GetBookingByDate) {
+    const { date, masterId } = params;
+
+    console.log(moment(date).hours(0).minutes(0).format('DD.MM.YYYY HH:mm'));
+    console.log(moment(date).hours(23).minutes(59).format('DD.MM.YYYY HH:mm'));
+    console.log(masterId);
+
+    try {
+      return this.db.booking.findMany({
+        where: {
+          AND: [
+            {
+              master: {
+                id: +masterId,
+              },
+            },
+            {
+              time: {
+                lte: moment(date).hours(23).minutes(59).toDate(),
+                gte: moment(date).hours(0).minutes(0).toDate(),
+              },
+            },
+          ],
+        },
+        include: {
+          services: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 function getMaxTime(time1: string, time2: string): [string, string] {
@@ -502,6 +556,3 @@ function getMaxTime(time1: string, time2: string): [string, string] {
     }
   }
 }
-
-
-

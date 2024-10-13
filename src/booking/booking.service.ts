@@ -26,6 +26,8 @@ export class BookingService {
         servicesIdArray,
         salonId,
         time,
+        adminComment,
+        masterComment,
       } = createBookingDto;
 
       const servicesMap = servicesIdArray.map((serviceId) => ({
@@ -38,6 +40,8 @@ export class BookingService {
           clientName,
           clientPhone,
           clientTelegramId,
+          adminComment,
+          masterComment,
           time: time,
           master: {
             connect: {

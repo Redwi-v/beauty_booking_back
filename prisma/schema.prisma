@@ -116,7 +116,7 @@ model MasterAccount {
 
   canChangeSchedule Boolean? @default(false)
 
-  telegramId String @unique()
+  telegramId String    @unique()
   Booking    Booking[]
 
   startShift DateTime
@@ -138,11 +138,10 @@ model MasterService {
 
   name String
 
-  tagName   String
-  Tag       Tag      @relation(fields: [tagName], references: [tagName], onDelete: Cascade)
-  salonId   Int
-  Booking   Booking? @relation(fields: [bookingId], references: [id])
-  bookingId Int?
+  tagName String
+  Tag     Tag       @relation(fields: [tagName], references: [tagName], onDelete: Cascade)
+  salonId Int
+  Booking Booking[]
 }
 
 enum weekDays {
@@ -200,7 +199,10 @@ model Booking {
   clientTelegramId String
   clientName       String
   clientPhone      String
-  clientComment    String
+  clientComment    String?
+
+  masterComment String?
+  adminComment String?
 
   salon Salon @relation(fields: [salonId], references: [salonId])
 

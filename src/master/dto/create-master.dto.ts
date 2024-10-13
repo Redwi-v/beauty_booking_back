@@ -88,7 +88,7 @@ export class CreateMasterDto {
   @ApiProperty({
     example: [weekDays[0], weekDays[1], weekDays[2], weekDays[3], weekDays[4]],
   })
-  workingDays: weekDays[];
+  workingDays: weekDays[] | weekDays;
   //---
 }
 
@@ -137,4 +137,16 @@ export class GetFreeTimeDto {
     required: false,
   })
   servicesIdList?: string[];
+}
+
+export class GetBookingByDate {
+  @ApiProperty({
+    example: new Date(),
+  })
+  date: Date;
+
+  @ApiProperty({
+    example: 1,
+  })
+  masterId: number;
 }

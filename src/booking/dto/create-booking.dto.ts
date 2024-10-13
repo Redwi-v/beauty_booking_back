@@ -34,8 +34,24 @@ export class CreateBookingDto {
   //--Field
   @ApiProperty({
     example: 'hello',
+    required: false,
   })
-  clientComment: string;
+  clientComment?: string;
+  //-----
+
+  //--Field
+  @ApiProperty({
+    example: 'hello2',
+    required: false,
+  })
+  adminComment?: string;
+  //-----
+  //--Field
+  @ApiProperty({
+    example: 'hello2',
+    required: false,
+  })
+  masterComment?: string;
   //-----
 
   //--Field

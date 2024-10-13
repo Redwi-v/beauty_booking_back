@@ -14,6 +14,7 @@ import {
 import { MasterService } from './master.service';
 import {
   CreateMasterDto,
+  GetBookingByDate,
   GetFreeTimeDto,
   GetMastersParams,
 } from './dto/create-master.dto';
@@ -73,12 +74,21 @@ export class MasterController {
 
   @Get('/time/freeTime')
   getFreeTime(@Query() params: GetFreeTimeDto) {
+    console.log(params);
+
     return this.masterService.getFreeTime(params);
   }
 
   @Get('/telegram/:id')
   getOneByTelegramId(@Param('id') id: string) {
     return this.masterService.getByTelegramId(id);
+  }
+
+  @Get('/booking/find/byDate')
+  getBookingByDate(@Query() params: GetBookingByDate) {
+    console.log(params);
+
+    return this.masterService.getBookingByDate(params);
   }
 }
 

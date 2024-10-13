@@ -51,20 +51,21 @@ export class SalonsService {
   }
 
   async findOne(id: number) {
-    const item = await this.db.salon.findUnique({
-      where: { salonId: id },
-      include: {
-        branches: {
-          include: {
-            address: true,
+    try {
+      const item = await this.db.salon.findUnique({
+        where: { salonId: id },
+        include: {
+          branches: {
+            include: {
+              address: true,
+            },
           },
         },
-      },
-    });
-
-    if (!item) throw new NotFoundException('Салон с данным id не найден');
-
-    return item;
+      });
+      return item;
+    } catch (error) {
+      throw new NotFoundException('Салон с данным id не найден');
+    }
   }
 
   update(id: number, updateSalonDto: UpdateSalonDto, imageName?: string) {
