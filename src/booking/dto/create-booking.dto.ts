@@ -72,11 +72,11 @@ export class CreateBookingDto {
   //-----
 
   //--Field
-  @IsNotEmpty()
   @ApiProperty({
     example: '9412498123',
+    required: false
   })
-  clientTelegramId: string;
+  clientTelegramId?: string;
   //-----
 
   //--Field

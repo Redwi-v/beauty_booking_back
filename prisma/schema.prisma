@@ -196,7 +196,7 @@ model Booking {
 
   status BookingStatuses @default(ACTIVE)
 
-  clientTelegramId String
+  clientTelegramId String?
   clientName       String
   clientPhone      String
   clientComment    String?
