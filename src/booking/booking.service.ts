@@ -2,10 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { DbService } from 'src/db/db.service';
-import { connect } from 'http2';
 import { InjectBot } from 'nestjs-telegraf';
-import { Context, Markup, Telegraf } from 'telegraf';
-import { AppService } from 'src/app.service';
+import { Context, Telegraf } from 'telegraf';
 import * as moment from 'moment';
 
 @Injectable()
@@ -34,6 +32,14 @@ export class BookingService {
       const servicesMap = servicesIdArray.map((serviceId) => ({
         id: serviceId,
       }));
+
+      const salon = await this.db.salon.findUnique({
+        where: {
+          salonId,
+        },
+      });
+
+      console.log(salon);
 
       const res = await this.db.booking.create({
         data: {
@@ -69,9 +75,10 @@ export class BookingService {
       });
 
       if (!res.masterComment) {
-        this?.bot?.telegram.sendMessage(
-          res.master.telegramId,
-          `
+        this?.bot?.telegram
+          .sendMessage(
+            res.master.telegramId,
+            `
             Привет, тебе назначена запись на ${moment(res.time).locale('ru').format('DD MMMM YYYY HH:mm')}
             Клиент: ${res.clientName}
             Номер клиента: ${res.clientPhone}
@@ -79,7 +86,10 @@ export class BookingService {
 
             Хрошего Дня ❤
           `,
-        );
+          )
+          .catch((err) => {
+            console.log(err);
+          });
       }
 
       return res;
@@ -116,11 +126,49 @@ export class BookingService {
     return `This action updates a #${id} booking`;
   }
 
-  remove(id: number) {
-    return this.db.booking.delete({
+  async remove(id: number) {
+    const res = await this.db.booking.delete({
       where: {
         id,
       },
+      include: {
+        master: true,
+      },
     });
+
+    this?.bot?.telegram
+      .sendMessage(
+        res.master.telegramId,
+        `
+          Привет, Запись ${moment(res.time).locale('ru').format('DD MMMM YYYY HH:mm')} Удалена💥
+          Клиент: ${res.clientName}
+          Номер клиента: ${res.clientPhone}
+          Коментарий: ${res.adminComment || res.clientComment}
+
+          Хрошего Дня ❤
+        `,
+      )
+      .catch((err) => {
+        console.log(err);
+      });
+
+    if (res.clientTelegramId) {
+      this?.bot?.telegram
+        .sendMessage(
+          res.clientTelegramId,
+          `
+            Привет, Запись ${moment(res.time).locale('ru').format('DD MMMM YYYY HH:mm')} Удалена💥
+            Мастер: ${res.master.name}
+            Коментарий: ${res.adminComment || res.masterComment}
+  
+            Хрошего Дня ❤
+          `,
+        )
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+
+    return res;
   }
 }

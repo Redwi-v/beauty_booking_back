@@ -80,6 +80,12 @@ export class SalonsService {
   }
 
   remove(id: number) {
-    return this.db.salon.delete({ where: { salonId: id } });
+    console.log(id);
+
+    return this.db.salon.delete({
+      where: {
+        salonId: id,
+      },
+    });
   }
 }

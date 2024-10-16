@@ -204,9 +204,9 @@ model Booking {
   masterComment String?
   adminComment String?
 
-  salon Salon @relation(fields: [salonId], references: [salonId])
+  salon Salon @relation(fields: [salonId], references: [salonId], onDelete: Cascade)
 
   salonId       Int
-  salonBranch   SalonBranch @relation(fields: [salonBranchId], references: [id])
+  salonBranch   SalonBranch @relation(fields: [salonBranchId], references: [id], onDelete: Cascade)
   salonBranchId Int
 }
