@@ -4,8 +4,9 @@ import { UpdateBookingDto } from './dto/update-booking.dto';
 import { DbService } from 'src/db/db.service';
 import { connect } from 'http2';
 import { InjectBot } from 'nestjs-telegraf';
-import { Context, Telegraf } from 'telegraf';
+import { Context, Markup, Telegraf } from 'telegraf';
 import { AppService } from 'src/app.service';
+import * as moment from 'moment';
 
 @Injectable()
 export class BookingService {
@@ -34,7 +35,7 @@ export class BookingService {
         id: serviceId,
       }));
 
-      return this.db.booking.create({
+      const res = await this.db.booking.create({
         data: {
           clientComment,
           clientName,
@@ -62,8 +63,29 @@ export class BookingService {
             connect: servicesMap,
           },
         },
+        include: {
+          master: true,
+        },
       });
+
+      if (!res.masterComment) {
+        this?.bot?.telegram.sendMessage(
+          res.master.telegramId,
+          `
+            Привет, тебе назначена запись на ${moment(res.time).locale('ru').format('DD MMMM YYYY HH:mm')}
+            Клиент: ${res.clientName}
+            Номер клиента: ${res.clientPhone}
+            Коментарий: ${res.adminComment || res.clientComment}
+
+            Хрошего Дня ❤
+          `,
+        );
+      }
+
+      return res;
     } catch (error) {
+      console.log(error);
+
       throw new BadRequestException(error);
     }
   }

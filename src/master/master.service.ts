@@ -13,12 +13,15 @@ import * as moment from 'moment';
 import { getTimeSlots } from 'src/utils/get-time-steps';
 import { roundTime } from 'src/utils/round-time';
 import { time } from 'console';
+import { InjectBot } from 'nestjs-telegraf';
+import { Context, Telegraf } from 'telegraf';
 
 @Injectable()
 export class MasterService {
   constructor(
     private db: DbService,
     private auth: AuthService,
+    @InjectBot() private readonly bot: Telegraf<Context>,
   ) {}
 
   async create(createMasterDto: CreateMasterDto, avatar) {
@@ -221,7 +224,7 @@ export class MasterService {
     };
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     try {
       return this.db.masterAccount.findUnique({
         where: { id },
@@ -508,10 +511,6 @@ export class MasterService {
 
   async getBookingByDate(params: GetBookingByDate) {
     const { date, masterId } = params;
-
-    console.log(moment(date).hours(0).minutes(0).format('DD.MM.YYYY HH:mm'));
-    console.log(moment(date).hours(23).minutes(59).format('DD.MM.YYYY HH:mm'));
-    console.log(masterId);
 
     try {
       return this.db.booking.findMany({
