@@ -14,6 +14,9 @@ export class BookingService {
   ) {}
 
   async create(createBookingDto: CreateBookingDto) {
+
+    console.log(createBookingDto);
+
     try {
       const {
         clientPhone,
@@ -38,8 +41,6 @@ export class BookingService {
           salonId,
         },
       });
-
-      console.log(salon);
 
       const res = await this.db.booking.create({
         data: {
@@ -95,7 +96,6 @@ export class BookingService {
       return res;
     } catch (error) {
       console.log(error);
-
       throw new BadRequestException(error);
     }
   }
