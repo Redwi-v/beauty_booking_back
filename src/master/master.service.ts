@@ -93,7 +93,7 @@ export class MasterService {
   }
 
   async findAll(params: GetMastersParams) {
-    const { salonId = 1, search, time, date } = params;
+    const { salonId, branchId, search, time, date } = params;
 
     let { servicesIdList } = params;
     servicesIdList = Array.isArray(servicesIdList)
@@ -103,7 +103,7 @@ export class MasterService {
         : [];
 
     const whereParamsAnd = [
-      { salon: { salonId: +salonId } },
+      { salon: { salonId: +salonId }, salonBranchId: branchId ? +branchId : undefined },
       {
         OR: [
           { lastName: { contains: search } },
@@ -354,7 +354,12 @@ export class MasterService {
     return this.db.masterAccount.delete({ where: { id } });
   }
 
-  async getFreeTime({ date, masterId, servicesIdList }: GetFreeTimeDto) {
+  async getFreeTime({
+    date,
+    masterId,
+    servicesIdList,
+    bookingId,
+  }: GetFreeTimeDto) {
     const weekDay = moment(date).format('dddd') as weekDays;
 
     if (!masterId || !servicesIdList) {
@@ -372,8 +377,6 @@ export class MasterService {
       masters.forEach((master, index) => {
         const start = moment(master.startShift).format('HH:mm');
         const end = moment(master.endShift).format('HH:mm');
-
-        console.log(`${start} - ${end}`);
 
         if (index === 0) {
           startTime = start;
@@ -424,7 +427,7 @@ export class MasterService {
     const bookingToday = master.Booking.filter((item) => {
       return (
         moment(item.time).format('DD.MM.YYYY') ===
-        moment(date).format('DD.MM.YYYY')
+          moment(date).format('DD.MM.YYYY') && +item.id !== Number(bookingId)
       );
     });
 

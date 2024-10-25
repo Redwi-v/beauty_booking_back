@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsPhoneNumber } from 'class-validator';
 
 export class SignUpBodyDto {
   @ApiProperty({
@@ -35,6 +35,13 @@ export class SignUpMasterDto extends SignUpBodyDto {
 
   telegramId?: string;
 }
+export class SignUpClientAccountDto extends SignUpBodyDto {
+  @ApiProperty()
+  @IsPhoneNumber()
+  @IsNotEmpty()
+  phoneNumber: string;
+}
+
 
 export class SignInBodyDto {
   @ApiProperty({

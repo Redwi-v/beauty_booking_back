@@ -8,6 +8,8 @@ import {
 } from './dto/dto';
 import { Role } from './role.enum';
 import { PasswordService } from 'src/auth/password.service';
+import { ApiTags } from '@nestjs/swagger';
+import * as moment from 'moment';
 
 @Injectable()
 export class UsersService {
@@ -20,12 +22,20 @@ export class UsersService {
     return this.db.user.findFirst({ where: { email } });
   }
 
-  createSalonOwnerAccount(data: {
+  async createSalonOwnerAccount(data: {
     userData: createUserDto;
     ownerData: createSalonOwnerDto;
     role?: Role;
   }) {
     const { ownerData, userData, role } = data;
+
+    const giftSubscription = await this.db.subscriptionType.findFirst({
+      where: {
+        isStartingSubscription: true,
+      },
+    });
+
+    console.log(giftSubscription);
 
     return this.db.salonOwnerAccount.create({
       data: {
@@ -36,6 +46,15 @@ export class UsersService {
           },
         },
         ...ownerData,
+        subscription: {
+          connect: giftSubscription || undefined,
+        },
+        subscriptionStartDate: new Date(),
+        subscriptionEndDate: moment()
+          .add({
+            minutes: 30,
+          })
+          .toDate(),
       },
       include: {
         owner: true,
@@ -43,13 +62,25 @@ export class UsersService {
     });
   }
 
-  getAdminProfile(id: number) {
-    return this.db.salonOwnerAccount.findUnique({
+  async getAdminProfile(id: number) {
+    const user = await this.db.salonOwnerAccount.findUnique({
       where: { id: id },
       include: {
         owner: true,
+        subscription: true,
       },
     });
+    console.log(user);
+    return user;
+  }
+
+  async getClientProfile(id: number) {
+    const user = await this.db.clientAccount.findUnique({
+      where: {
+        userId: id,
+      },
+    });
+    return user;
   }
 
   async registerUser(data: RegisterUser) {

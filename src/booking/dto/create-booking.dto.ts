@@ -16,6 +16,13 @@ export class CreateBookingDto {
   //-----
 
   //--Field
+  @ApiProperty({
+    example: 1,
+  })
+  clientId?: number;
+  //-----
+
+  //--Field
   @IsNotEmpty()
   @ApiProperty({
     example: 1,
@@ -56,7 +63,9 @@ export class CreateBookingDto {
 
   //--Field
   @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsPhoneNumber(undefined, {
+    message: 'Неверный номер телефона',
+  })
   @ApiProperty({
     example: '+79212994212',
   })
@@ -74,7 +83,7 @@ export class CreateBookingDto {
   //--Field
   @ApiProperty({
     example: '9412498123',
-    required: false
+    required: false,
   })
   clientTelegramId?: string;
   //-----

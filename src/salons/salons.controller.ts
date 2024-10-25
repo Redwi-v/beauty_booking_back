@@ -12,15 +12,16 @@ import {
   Query,
 } from '@nestjs/common';
 import { SalonsService } from './salons.service';
-import { CreateSalonDto } from './dto/create-salon.dto';
+import { CreateSalonDto, getAllBookingDto } from './dto/create-salon.dto';
 import { UpdateSalonDto } from './dto/update-salon.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { SessionInfo } from 'src/auth/session-info.decorator';
 import { GetSessionInfoDto } from 'src/auth/dto/dto';
-import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { editFileName, imageFileFilter } from 'src/utils/file-upload.utils';
+import { SubscriptionGuard } from './guards/subscription.guard';
 
 @Controller('salons')
 @ApiTags('salons')
@@ -57,7 +58,10 @@ export class SalonsController {
   }
 
   @Get(':id')
+  @UseGuards(SubscriptionGuard)
   findOne(@Param('id') id: string) {
+    console.log('hello --');
+
     return this.salonsService.findOne(+id);
   }
 
@@ -86,4 +90,13 @@ export class SalonsController {
   remove(@Param('id') id: string) {
     return this.salonsService.remove(+id);
   }
+
+  @UseGuards(AuthGuard)
+  @Get('/booking/all')
+  allBooking(@Query() params: getAllBookingDto) {
+    return this.salonsService.getAllBooking(params);
+  }
 }
+
+
+

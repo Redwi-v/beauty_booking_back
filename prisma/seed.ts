@@ -2,78 +2,47 @@ import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const salonData: Prisma.SalonCreateInput[] = [
-  {
-    name: 'Salon1',
-    logoUrl:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBIePbmKx1aWZNHFJkvrMOvxW1j56hK3MyHw&s',
-  },
-  {
-    name: 'Salon1',
-    logoUrl:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBIePbmKx1aWZNHFJkvrMOvxW1j56hK3MyHw&s',
-  },
-  {
-    name: 'Salon1',
-    logoUrl:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBIePbmKx1aWZNHFJkvrMOvxW1j56hK3MyHw&s',
-  },
-];
-
-const branchData: Prisma.SalonBranchCreateInput[] = [
-  {
-    address: {
-      create: {
-        address: 'шоссе Гоголя, 57',
-        city: 'г.Домодедово',
-      },
-    },
-  },
-  {
-    address: {
-      create: {
-        address: 'спуск Космонавтов, 13',
-        city: 'г. Волоколамск',
-      },
-    },
-  },
-  {
-    address: {
-      create: {
-        address: 'проезд Ломоносова, 98',
-        city: 'г. Люберцы',
-      },
-    },
-  },
-];
-
 async function main() {
-  const ownerAccount = await prisma.salonOwnerAccount.findFirst();
-
-  for (const salonItem of salonData) {
-    const salon = await prisma.salon.create({
-      data: {
-        ...salonItem,
-        SalonOwnerAccount: {
-          connect: {
-            id: ownerAccount?.id,
-          },
-        },
+  await prisma.subscriptionType.createMany({
+    data: [
+      {
+        durationDays: 7,
+        durationMouths: 0,
+        price: 10000000,
+        subTitle: 'Подарочная подписка 7 дней',
+        title: 'Подарочная подписка',
+        isStartingSubscription: true,
       },
-    });
-
-    await prisma.salonBranch.createManyAndReturn({
-      data: [
-        {
-          salonId: salon.salonId,
-        },
-        {
-          salonId: salon.salonId,
-        },
-      ],
-    });
-  }
-  console.log(`Seeding finished.`);
+      {
+        durationDays: 0,
+        durationMouths: 1,
+        price: 1900,
+        subTitle: 'При подключении доступ на 1 месяц',
+        title: 'Минимальный',
+      },
+      {
+        durationDays: 0,
+        durationMouths: 4,
+        price: 5700,
+        subTitle: '3 месяца + 1 месяц в подарок',
+        title: 'Стандартный',
+      },
+      {
+        durationDays: 0,
+        durationMouths: 6,
+        price: 11400,
+        subTitle: '6 месяцев + 4 месяца в подарок',
+        title: 'Оптимальный',
+      },
+      {
+        durationDays: 0,
+        durationMouths: 24,
+        price: 22800,
+        subTitle: '12 месяцев + 12 месяцев в подарок',
+        title: 'Максимальный',
+      },
+    ],
+  });
 }
 
 main()

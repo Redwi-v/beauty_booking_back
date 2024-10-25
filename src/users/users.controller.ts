@@ -29,6 +29,11 @@ export class UsersController {
     return this.userService.getAdminProfile(session.id);
   }
 
+  @Get('client/profile')
+  getProfileClient(@SessionInfo() session: GetSessionInfoDto) {
+    return this.userService.getClientProfile(session.id);
+  }
+
   @Post('add')
   registerUser(@Body() data: RegisterUser) {
     return this.userService.registerUser(data);

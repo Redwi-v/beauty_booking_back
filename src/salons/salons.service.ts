@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateSalonDto } from './dto/create-salon.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateSalonDto, getAllBookingDto } from './dto/create-salon.dto';
 import { UpdateSalonDto } from './dto/update-salon.dto';
 import { GetSessionInfoDto } from 'src/auth/dto/dto';
 import { DbService } from 'src/db/db.service';
-import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class SalonsService {
@@ -14,10 +17,13 @@ export class SalonsService {
     session: GetSessionInfoDto,
     imageName?: string,
   ) {
+    console.log(session);
+    console.log(createSalonData);
+
     const data = await this.db.salon.create({
       data: {
         ...createSalonData,
-        SalonOwnerAccount: { connect: { ownerId: session.id } },
+        SalonOwnerAccount: { connect: { id: session.id } },
         logoUrl: imageName,
         isOpen: Boolean(Number(createSalonData?.isOpen)),
       },
@@ -34,7 +40,15 @@ export class SalonsService {
           salonOwnerAccountId: session.id,
         },
       },
-      include: { _count: true },
+      include: {
+        _count: true,
+        branches: {
+          include: {
+            address: true,
+          },
+        },
+        MasterAccount: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -50,9 +64,32 @@ export class SalonsService {
     return { list: salonsList, meta: { count } };
   }
 
+  async getAllBooking(params: getAllBookingDto) {
+    try {
+      return this.db.booking.findMany({
+        where: {
+          AND: [
+            { salonId: { equals: +params.salonId } },
+            { salonBranchId: { equals: +params.branchId } },
+          ],
+        },
+        include: {
+          services: true,
+          master: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      throw new BadRequestException();
+    }
+  }
+
   async findOne(id: number) {
     try {
-      const item = await this.db.salon.findUnique({
+      console.log('one ----');
+
+      const item = await this.db.salon.findFirst({
         where: { salonId: id },
         include: {
           branches: {

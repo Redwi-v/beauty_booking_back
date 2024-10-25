@@ -14,9 +14,6 @@ export class BookingService {
   ) {}
 
   async create(createBookingDto: CreateBookingDto) {
-
-    console.log(createBookingDto);
-
     try {
       const {
         clientPhone,
@@ -30,6 +27,7 @@ export class BookingService {
         time,
         adminComment,
         masterComment,
+        clientId,
       } = createBookingDto;
 
       const servicesMap = servicesIdArray.map((serviceId) => ({
@@ -50,6 +48,11 @@ export class BookingService {
           clientTelegramId,
           adminComment,
           masterComment,
+          client: {
+            connect: {
+              userId: clientId,
+            },
+          },
           time: time,
           master: {
             connect: {
@@ -72,6 +75,11 @@ export class BookingService {
         },
         include: {
           master: true,
+          client: {
+            include: {
+              User: true,
+            },
+          },
         },
       });
 
@@ -104,7 +112,9 @@ export class BookingService {
     try {
       return this.db.booking.findMany({
         where: {
-          clientTelegramId: telegramId,
+          client: {
+            userId: +telegramId,
+          },
         },
         include: {
           master: true,
@@ -122,8 +132,62 @@ export class BookingService {
     return `This action returns a #${id} booking`;
   }
 
-  update(id: number, updateBookingDto: UpdateBookingDto) {
-    return `This action updates a #${id} booking`;
+  async update(id: number, updateBookingDto: UpdateBookingDto) {
+    const {
+      adminComment,
+      clientComment,
+      masterComment,
+      masterId,
+      clientName,
+      clientPhone,
+      clientTelegramId,
+      salonBranchId,
+      salonId,
+      servicesIdArray,
+      time,
+    } = updateBookingDto;
+
+    const bookingInDb = await this.db.booking.findUnique({
+      where: {
+        id: +id,
+      },
+      include: {
+        services: true,
+      },
+    });
+
+    if (!bookingInDb) throw new BadRequestException('Запись не найдена');
+
+    const servicesInDb = await this.db.masterService.findMany({
+      where: {
+        id: {
+          in: servicesIdArray,
+        },
+      },
+    });
+
+    return this.db.booking.update({
+      where: {
+        id: +id,
+      },
+      data: {
+        adminComment,
+        clientComment,
+        clientName,
+        clientPhone,
+        masterComment,
+        time,
+        services: {
+          disconnect: bookingInDb.services,
+          connect: servicesInDb,
+        },
+        master: {
+          connect: {
+            id: masterId,
+          },
+        },
+      },
+    });
   }
 
   async remove(id: number) {

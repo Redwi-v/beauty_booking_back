@@ -90,11 +90,21 @@ export class CreateMasterDto {
   })
   workingDays: weekDays[] | weekDays;
   //---
+
+  //---property
+  @ApiProperty({
+    example: [[new Date(), new Date()]],
+  })
+  freeTimeIntervals: [[Date, Date]];
+  //---
 }
 
 export class GetMastersParams {
   @ApiProperty({})
   salonId: number;
+
+  @ApiProperty({})
+  branchId?: number;
 
   @ApiProperty({
     required: false,
@@ -121,6 +131,12 @@ export class GetMastersParams {
 }
 
 export class GetFreeTimeDto {
+  @ApiProperty({
+    example: 1,
+    required: false,
+  })
+  bookingId?: number;
+
   @ApiProperty({
     example: new Date(),
   })

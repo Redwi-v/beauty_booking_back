@@ -22,3 +22,13 @@ export class CreateSalonDto {
 
   description: string;
 }
+
+
+export class getAllBookingDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  salonId: number;
+
+  @ApiProperty()
+  branchId: number;
+}

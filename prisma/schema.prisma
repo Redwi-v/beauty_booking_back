@@ -22,6 +22,7 @@ model User {
   role Role? @default(SALON_OWNER)
 
   SalonOwnerAccount SalonOwnerAccount?
+  clientAccount     ClientAccount?
 }
 
 enum Role {
@@ -41,6 +42,14 @@ model SalonOwnerAccount {
 
   name     String
   lastName String
+
+  subscription       SubscriptionType? @relation(fields: [subscriptionTypeId], references: [id])
+  subscriptionTypeId Int?
+
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+
+  transactions userTransactions[]
 }
 
 model Salon {
@@ -122,6 +131,8 @@ model MasterAccount {
   startShift DateTime
   endShift   DateTime
 
+  freeTimeIntervals String[]
+
   workingDays weekDays[]
 }
 
@@ -202,11 +213,53 @@ model Booking {
   clientComment    String?
 
   masterComment String?
-  adminComment String?
+  adminComment  String?
 
   salon Salon @relation(fields: [salonId], references: [salonId], onDelete: Cascade)
 
   salonId       Int
   salonBranch   SalonBranch @relation(fields: [salonBranchId], references: [id], onDelete: Cascade)
   salonBranchId Int
+
+  client          ClientAccount? @relation(fields: [clientAccountId], references: [id])
+  clientAccountId Int?
+}
+
+model ClientAccount {
+  id          Int    @id @default(autoincrement())
+  phoneNumber String @unique
+  name        String
+  lastName    String
+
+  User    User      @relation(fields: [userId], references: [id])
+  userId  Int       @unique()
+  Booking Booking[]
+}
+
+model SubscriptionType {
+  id Int @id @default(autoincrement())
+
+  durationMouths Int
+  durationDays   Int
+
+  price Int
+
+  title    String
+  subTitle String
+
+  SalonOwnerAccount SalonOwnerAccount[]
+
+  isStartingSubscription Boolean?           @default(false)
+  userTransactions       userTransactions[]
+}
+
+model userTransactions {
+  payId  String @unique()
+  amount String
+
+  product            SubscriptionType @relation(fields: [subscriptionTypeId], references: [id])
+  subscriptionTypeId Int
+
+  SalonOwnerAccount   SalonOwnerAccount? @relation(fields: [salonOwnerAccountId], references: [id])
+  salonOwnerAccountId Int?
 }

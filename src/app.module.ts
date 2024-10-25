@@ -16,6 +16,7 @@ import { DservicesModule } from './dservices/dservices.module';
 import { ServicesModule } from './services/services.module';
 import { BookingModule } from './booking/booking.module';
 import { PaymentModule } from './payment/payment.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 
 const sessions = new LocalSession({database: 'sessions_db.json'})
@@ -50,7 +51,9 @@ const sessions = new LocalSession({database: 'sessions_db.json'})
 
     BookingModule,
 
-    PaymentModule
+    PaymentModule,
+
+    SubscriptionModule
 
   ],
 
