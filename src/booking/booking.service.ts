@@ -48,11 +48,6 @@ export class BookingService {
           clientTelegramId,
           adminComment,
           masterComment,
-          client: {
-            connect: {
-              userId: clientId,
-            },
-          },
           time: time,
           master: {
             connect: {
@@ -126,6 +121,24 @@ export class BookingService {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+  findAllById(idArray: number[]) {
+
+    return this.db.booking.findMany({
+      where: {
+        id: {
+          in: idArray
+        }
+      },
+      include: {
+        services: true,
+        client: true,
+        master: true,
+        salon: true,
+        salonBranch: true
+      }
+    })
+
   }
 
   findOne(id: number) {

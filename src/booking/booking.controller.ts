@@ -37,6 +37,11 @@ export class BookingController {
     return this.bookingService.findOne(+id);
   }
 
+  @Post('find/byIdArray')
+  findAllById(@Body() Body: { idArray: number[] }) {
+    return this.bookingService.findAllById(Body.idArray);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
     return this.bookingService.update(+id, updateBookingDto);
