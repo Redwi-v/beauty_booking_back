@@ -1,16 +1,28 @@
-import { Controller, Get, Post, Body, HttpCode, HttpStatus, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   GetSessionInfoDto,
-  SignInBodyDto,
-  SignUpBodyDto,
-  SignUpClientAccountDto,
+  ISendAuthKeyDto,
+  SignInDto,
+  SinUpAdminDto,
 } from './dto/dto';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { CookieService } from './cookie.service';
-import { AuthGuard } from './auth.guard';
+import { CookieService, TokenNamesEnum } from './cookie.service';
 import { SessionInfo } from './session-info.decorator';
+import { AuthGuard } from './auth.guard';
+import { TokensDecorator } from './roles.decorator';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom, map } from 'rxjs';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -18,58 +30,103 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly cookeService: CookieService,
+    private readonly httpService: HttpService,
   ) {}
 
-  @Post('sign-up-salon-owner')
-  @ApiCreatedResponse()
-  async signUp(
-    @Body() body: SignUpBodyDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const { accessToken } = await this.authService.signUpServiceOwner(body);
-    this.cookeService.setToken(res, accessToken);
+  private async checkKey(messageKey: string) {
+    return firstValueFrom(
+      this.httpService.post<{ status: 'CONFIRMED' | string }>(
+        'https://direct.i-dgtl.ru/api/v1/verifier/widget/check',
+        {
+          key: messageKey,
+        },
+        {
+          headers: {
+            Authorization: `Basic ${process.env.DGTL_WIDGET_AUTH}`,
+          },
+        },
+      ),
+    );
   }
 
-  @Post('sign-up-client')
-  @ApiCreatedResponse()
-  async signUpClient(
-    @Body() body: SignUpClientAccountDto,
+  // ADMINS
+  @Post('admin/sign-up')
+  async signUpAdmin(
+    @Body() body: SinUpAdminDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken } =
-      await this.authService.signUpServiceClientAccount(body);
-    this.cookeService.setToken(res, accessToken);
+    const widgetRes = await this.checkKey(body.messageKey);
+
+    if (widgetRes.data.status !== 'CONFIRMED') return;
+
+    const { accessToken } = await this.authService.signUpAdmin(body);
+    this.cookeService.setToken(res, accessToken, TokenNamesEnum.adminToken);
   }
 
-  @Post('sign-in')
-  @HttpCode(HttpStatus.OK)
-  @ApiOkResponse()
-  async signIn(
-    @Body() body: SignInBodyDto,
+  @Post('admin/sign-in')
+  async signInAdmin(
+    @Body() body: SignInDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken } = await this.authService.signIn(
-      body.email,
+    const widgetRes = await this.checkKey(body.messageKey);
+
+    if (widgetRes.data.status !== 'CONFIRMED') return;
+
+    const { accessToken } = await this.authService.signInAdmin(
+      body.phoneNumber,
       body.password,
     );
-    this.cookeService.setToken(res, accessToken);
+    this.cookeService.setToken(res, accessToken, TokenNamesEnum.adminToken);
   }
 
-  @Post('sign-out')
-  @ApiOkResponse()
+  @Post('admin/sign-out')
+  @TokensDecorator()
   @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.OK)
   signOut(@Res({ passthrough: true }) res: Response) {
-    this.cookeService.removeToken(res);
+    this.cookeService.removeToken(res, TokenNamesEnum.adminToken);
   }
 
-  @Get('session')
-  @HttpCode(HttpStatus.OK)
+  @Get('/session')
   @UseGuards(AuthGuard)
   @ApiOkResponse({
     type: GetSessionInfoDto,
   })
-  getSessionInfo(@SessionInfo() session: GetSessionInfoDto) {
+  async getSessionInfo(@SessionInfo() session: GetSessionInfoDto) {
     return session;
+  }
+
+  @Post('key/send')
+  @ApiOkResponse({
+    status: 200,
+  })
+  @HttpCode(HttpStatus.OK)
+  async sendAuthKey(@Body() body: ISendAuthKeyDto) {
+    const res = await this.httpService
+      .post(
+        'https://direct.i-dgtl.ru/api/v1/verifier/widget/send',
+        {
+          key: body.key,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Basic ${ process.env.DGTL_WIDGET_AUTH }`,
+          },
+        },
+      )
+      .pipe(map((res) => res.data));
+
+    return res;
+  }
+
+  // CLIENTS
+
+  @Post('client/sign-up')
+  async signUpClient(
+    @Body() body: SinUpAdminDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken } = await this.authService.signUpClient(body);
+    this.cookeService.setToken(res, accessToken, TokenNamesEnum.clientToken);
   }
 }

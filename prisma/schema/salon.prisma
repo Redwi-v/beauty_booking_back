@@ -1,0 +1,84 @@
+model Salon {
+  id Int @id @default(autoincrement())
+
+  owner              AdminAccount @relation(fields: [adminAccountUserId], references: [userId])
+  adminAccountUserId Int
+
+  name        String
+  logoUrl     String?
+  isOpen      Boolean? @default(false)
+  description String   @default("")
+
+  branches SalonBranch[] 
+  services Service[]
+  serivceTag SerivceTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+}
+
+model SalonBranch {
+  id      Int             @id @default(autoincrement())
+  masters MasterAccount[]
+
+  salon   Salon? @relation(fields: [salonId], references: [id])
+  salonId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  isOpen Boolean
+
+  address   String
+  latitude  String
+  longitude String
+
+}
+
+
+model Service {
+  id Int @id @default(autoincrement())
+
+  masterAccount   MasterAccount[]
+  masterAccountId Int?
+
+  salon   Salon @relation(fields: [salonId], references: [id])
+  salonId Int
+
+  serivceTag   SerivceTag? @relation(fields: [serivceTagId], references: [id])
+  serivceTagId Int?
+
+  name     String
+  price    Int
+  duration Int
+
+  bookingList   Booking[]
+  bookingId Int?
+}
+
+model SerivceTag {
+  id Int @id @default(autoincrement())
+
+  salon   Salon @relation(fields: [salonId], references: [id])
+  salonId Int
+
+  name String
+
+  services Service[]
+}
+
+model Booking {
+  id Int @id @default(autoincrement())
+
+  clientAccount   ClientAccount? @relation(fields: [clientAccountId], references: [id])
+  clientAccountId Int?
+
+  masterAccount   MasterAccount? @relation(fields: [masterAccountId], references: [id])
+  masterAccountId Int?
+
+  staritTime DateTime
+  endTime    DateTime
+
+  services Service[]
+}

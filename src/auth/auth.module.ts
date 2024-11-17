@@ -7,10 +7,15 @@ import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { DbService } from 'src/db/db.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     UsersModule,
+    HttpModule.register({
+      timeout: 5000,
+      maxRedirects: 5,
+    }),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

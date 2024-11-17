@@ -41,9 +41,11 @@ export class SubscriptionService {
         },
       });
 
-      await this.db.salonOwnerAccount.update({
+      if ( !transaction  || !transaction.adminAccountUserId) throw new BadRequestException()
+
+      await this.db.adminAccount.update({
         where: {
-          id: transaction?.SalonOwnerAccount?.id,
+          userId: transaction.adminAccountUserId,
         },
         data: {
           subscription: {
@@ -68,9 +70,9 @@ export class SubscriptionService {
       },
     });
 
-    const buyer = await this.db.salonOwnerAccount.findUnique({
+    const buyer = await this.db.adminAccount.findUnique({
       where: {
-        id: userId,
+        userId: userId,
       },
     });
 

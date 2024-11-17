@@ -1,7 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
-import { SignUpBodyDto } from 'src/auth/dto/dto';
 
 export class createUserDto {
   @ApiProperty({
@@ -42,12 +40,3 @@ export class createSalonOwnerDto {
   @MinLength(2)
   lastName: string;
 }
-
-export class RegisterUser extends SignUpBodyDto {
-  @ApiProperty({
-    example: Role.ADMIN,
-  })
-  role: Role;
-}
-
-export class UpdateUser extends PartialType(RegisterUser) {}

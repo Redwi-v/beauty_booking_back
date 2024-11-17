@@ -1,0 +1,77 @@
+// user info
+model User {
+  id   Int    @id @default(autoincrement())
+  hash String
+  salt String
+
+  name     String
+  lastName String
+
+  adminAccount  AdminAccount?
+  clientAccount ClientAccount?
+
+}
+
+enum ADMIN_ROLES {
+  ADMIN
+  SUPER_ADMIN
+}
+
+// accounts
+model AdminAccount {
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int  @unique
+
+  phoneNumber String @unique
+
+  salons Salon[]
+
+  role ADMIN_ROLES
+
+  subscription       SubscriptionType? @relation(fields: [subscriptionTypeId], references: [id])
+  subscriptionTypeId Int?
+
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+
+  transactions userTransactions[]
+}
+
+model ClientAccount {
+  id Int @id @default(autoincrement())
+
+  phoneNumber String @unique
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int  @unique()
+
+  bookingList Booking[]
+}
+
+model MasterAccount {
+  id Int @id @default(autoincrement())
+
+  salonBranchId Int?
+
+  masterService Service[]
+
+  rating Int? @default(0)
+
+  speciality String
+  about      String?
+
+  name String
+  lastName String
+
+  avatar String?
+
+  canChangeSchedule Boolean? @default(false)
+  canChangeBookingTime Boolean? @default(false)
+
+  telegramId String    @unique()
+  Booking    Booking[]
+
+  workingsDays WorkingDay[]
+
+  salonBranch SalonBranch? @relation(fields: [salonBranchId], references: [id])
+}
