@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { CreateSalonDto, UpdateSalonDto } from './dto/create.salon.dto';
 import { GetSessionInfoDto } from 'src/auth/dto/dto';
-import { GetAllSalonsDto } from './dto/dto';
+import { GetAllSalonsDto, GetByIdDto } from './dto/dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -102,14 +102,24 @@ export class SalonService {
     };
   }
 
-  getById(id: number, session: GetSessionInfoDto) {
+  getById(id: number, session: GetSessionInfoDto, params: GetByIdDto) {
+
+    const {onlyActiveBranches} = params
+
     return this.db.salon.findUnique({
       where: {
         id: +id,
-        owner: {
-          userId: session.id,
-        },
       },
+
+      include: {
+        branches: {
+          where: {
+            isOpen: {
+              equals: onlyActiveBranches === 'true' ? true : undefined
+            }
+          }
+        }
+      }
     });
   }
 }

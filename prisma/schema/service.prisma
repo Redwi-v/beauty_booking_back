@@ -1,0 +1,45 @@
+model Service {
+  id Int @id @default(autoincrement())
+
+  masterAccounts MasterAccount[]
+
+  serviceTag   ServiceTag? @relation(fields: [serviceTagId], references: [id])
+  serviceTagId Int?
+
+  name     String
+  price    Int
+  duration Int
+
+  bookingList Booking[]
+  bookingId   Int?
+
+  Events   Events? @relation(fields: [eventsId], references: [id])
+  eventsId Int?
+}
+
+model ServiceTag {
+  id Int @id @default(autoincrement())
+
+  salon   Salon @relation(fields: [salonId], references: [id])
+  salonId Int
+
+  name String
+
+  services Service[]
+}
+
+model Booking {
+  id Int @id @default(autoincrement())
+
+  clientAccount   ClientAccount? @relation(fields: [clientAccountId], references: [id])
+  clientAccountId Int?
+
+  masterAccount   MasterAccount? @relation(fields: [masterAccountId], references: [id])
+  masterAccountId Int?
+
+  duration Int
+
+  day DateTime
+
+  services Service[]
+}

@@ -24,9 +24,53 @@ export class SignUpUserDto {
   messageKey: string;
 }
 
-export class SinUpAdminDto extends SignUpUserDto {}
-export class SinUpClientDto extends SignUpUserDto {}
-export class SinUpMasterDto extends SignUpUserDto {}
+export class SignUpAdminDto extends SignUpUserDto {}
+export class SignUpClientDto extends SignUpUserDto {}
+export class SignUpMasterDto extends SignUpUserDto {}
+// export class SignUpMasterDto {
+
+//   @ApiProperty({
+//     example: 1,
+//   })
+//   salonBranchId: number
+
+//   @ApiProperty()
+//   masterServicesId: number[]
+
+//   @ApiProperty()
+//   speciality: string
+//   @ApiProperty()
+//   about: string
+
+//   @ApiProperty()
+//   name: st
+
+//   @ApiProperty()
+//   lastName String
+
+//   @ApiProperty()
+//   avatar String?
+
+//   @ApiProperty()
+//   canChangeSchedule Boolean? @default(false)
+
+//   @ApiProperty()
+//   canChangeBookingTime Boolean? @default(false)
+
+//   @ApiProperty()
+//   telegramId String    @unique()
+
+//   @ApiProperty()
+//   Booking    Booking[]
+
+
+//   @ApiProperty()
+//   workingsDays WorkingDay[]
+
+
+//   @ApiProperty()
+//   salonBranch SalonBranch? @relation(fields: [salonBranchId], references: [id])
+// }
 
 export class SignInDto {
   @ApiProperty({ default: 'Hello1234' })

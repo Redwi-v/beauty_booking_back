@@ -9,7 +9,6 @@ model User {
 
   adminAccount  AdminAccount?
   clientAccount ClientAccount?
-
 }
 
 enum ADMIN_ROLES {
@@ -46,6 +45,7 @@ model ClientAccount {
   userId Int  @unique()
 
   bookingList Booking[]
+  Events      Events[]
 }
 
 model MasterAccount {
@@ -60,12 +60,12 @@ model MasterAccount {
   speciality String
   about      String?
 
-  name String
+  name     String
   lastName String
 
   avatar String?
 
-  canChangeSchedule Boolean? @default(false)
+  canChangeSchedule    Boolean? @default(false)
   canChangeBookingTime Boolean? @default(false)
 
   telegramId String    @unique()
@@ -74,4 +74,5 @@ model MasterAccount {
   workingsDays WorkingDay[]
 
   salonBranch SalonBranch? @relation(fields: [salonBranchId], references: [id])
+  Events      Events[]
 }

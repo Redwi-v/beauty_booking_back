@@ -47,12 +47,19 @@ export class MasterController {
 
   @Get()
   findAll(@Query() params: GetAllMastersDto) {
+    console.log(params);
+    
     return this.masterService.findAll(params);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.masterService.findOne(+id);
+  }
+
+  @Get('telegram/:id')
+  finByTelegram(@Param('id') id: string) {
+    // return this.masterService.findOne();
   }
 
   @Patch(':id')

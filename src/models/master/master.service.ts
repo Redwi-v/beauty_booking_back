@@ -1,16 +1,17 @@
-import { Body, Injectable } from '@nestjs/common';
+import { BadRequestException, Body, Injectable } from '@nestjs/common';
 import {
   CreateMasterDto,
   GetAllMastersDto,
   UpdateMasterDto,
 } from './dto/create-master.dto';
 import { DbService } from 'src/db/db.service';
+import * as moment from 'moment';
 
 @Injectable()
 export class MasterService {
   constructor(private readonly db: DbService) {}
 
-  create(createMasterDto: CreateMasterDto, avatarUrl?: string) {
+  async create(createMasterDto: CreateMasterDto, avatarUrl?: string) {
     const {
       about,
       canChangeSchedule,
@@ -22,6 +23,15 @@ export class MasterService {
       telegramId,
       canChangeBookingTime,
     } = createMasterDto;
+
+    const masterInDb = await this.db.masterAccount.findFirst({
+      where: {
+        telegramId,
+      },
+    });
+
+    if (masterInDb)
+      throw new BadRequestException('Мастер с таким telegramId уже существует');
 
     return this.db.masterAccount.create({
       data: {
@@ -43,9 +53,52 @@ export class MasterService {
   }
 
   async findAll(params: GetAllMastersDto) {
-    console.log(params);
+    const { search, skip, take, salonBranchId, salonId, date, time } = params;
 
-    const { search, skip, take, salonBranchId } = params;
+    if (!time) {
+      const searchPromise = this.db.masterAccount.findMany({
+        where: {
+          salonBranchId: {
+            equals: salonBranchId ? +salonBranchId : undefined,
+          },
+          salonBranch: {
+            salonId: +salonId
+          },
+          name: { contains: search, mode: 'insensitive' },
+        },
+      });
+
+      const countPromise = this.db.masterAccount.count({
+        where: {
+          salonBranchId: {
+            equals: salonBranchId ? +salonBranchId : undefined,
+          },
+          salonBranch: {
+            salonId: +salonId
+          },
+
+          name: { contains: search, mode: 'insensitive' },
+        },
+      });
+
+      const [searchRes, countRes] = await this.db.$transaction([
+        searchPromise,
+        countPromise,
+      ]);
+
+      return {
+        list: searchRes,
+        count: countRes,
+      };
+    }
+
+    let timeInMinutes;
+
+    timeInMinutes = time
+      ? +time?.split(':')[0] * 60 + +time?.split(':')[1]
+      : undefined;
+
+    const findDate = date ? moment(date).toDate() : undefined;
 
     const searchPromise = this.db.masterAccount.findMany({
       skip: skip ? +skip : undefined,
@@ -53,6 +106,26 @@ export class MasterService {
       where: {
         salonBranchId: {
           equals: salonBranchId ? +salonBranchId : undefined,
+        },
+        salonBranch: {
+          salonId: +salonId,
+        },
+        workingsDays: {
+          some: {
+            day: {
+              gte: date
+                ? moment(findDate).set({ minutes: 0, hours: 0 }).toDate()
+                : undefined,
+              lte: date
+                ? moment(findDate).set({ minutes: 59, hours: 23 }).toDate()
+                : undefined,
+            },
+            allowedRecordingTime: time
+              ? {
+                  has: timeInMinutes,
+                }
+              : undefined,
+          },
         },
 
         name: { contains: search, mode: 'insensitive' },

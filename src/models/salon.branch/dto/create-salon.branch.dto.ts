@@ -38,6 +38,13 @@ export class GetAllSalonBranchesDto {
     required: false,
   })
   search: string;
+
+  @ApiProperty({})
+  salonId: number;
+
+  
+  @ApiProperty({})
+  onlyActive: boolean;
 }
 
 export class DeleteBranchDto {

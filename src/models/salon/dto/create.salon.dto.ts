@@ -1,4 +1,4 @@
-import { ApiConsumes, ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
 export class CreateSalonDto {

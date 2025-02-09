@@ -6,10 +6,10 @@ import {
 import { UsersService } from '../users/users.service';
 import { PasswordService } from './password.service';
 import { JwtService } from '@nestjs/jwt';
-import { SinUpAdminDto, SinUpClientDto } from './dto/dto';
 import { DbService } from 'src/db/db.service';
 import { ADMIN_ROLES, User } from '@prisma/client';
 import * as moment from 'moment';
+import { SignUpAdminDto, SignUpClientDto, SignUpMasterDto } from './dto/dto';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
     private db: DbService,
   ) {}
 
-  async signUpAdmin(data: SinUpAdminDto) {
+  async signUpAdmin(data: SignUpAdminDto) {
     const { password, lastName, name, phoneNumber } = data;
 
     const user = await this.db.adminAccount.findUnique({
@@ -85,7 +85,7 @@ export class AuthService {
     return accessToken;
   }
 
-  async signUpClient(data: SinUpClientDto) {
+  async signUpClient(data: SignUpClientDto) {
     const { password, lastName, name, phoneNumber } = data;
 
     const user = await this.db.clientAccount.findUnique({
@@ -131,6 +131,39 @@ export class AuthService {
     return { accessToken };
   }
 
+  // async signUpMaster(data: SignUpMasterDto) {
+  //   const { telegramId } = data;
+
+  //   const user = await this.db.masterAccount.findUnique({
+  //     where: {
+  //       telegramId,
+  //     },
+  //   });
+
+  //   if (user) {
+  //     throw new BadRequestException({
+  //       message: ['user is Exit'],
+  //       error: 'Bad Request',
+  //       statusCode: 400,
+  //     });
+  //   }
+
+  //   const newClient = await this.db.masterAccount.create({
+  //     data: {
+
+  //     },
+
+  //   });
+
+  //   const { accessToken } = await this.getToken(
+  //     newClient,
+  //     newClient.clientAccount?.phoneNumber!,
+  //     password,
+  //   );
+
+  //   return { accessToken };
+  // }
+
   async signInAdmin(phoneNumber: string, password: string) {
     const admin = await this.db.adminAccount.findUnique({
       where: {
@@ -148,6 +181,29 @@ export class AuthService {
     const tokenRes = await this.getToken(
       admin.user,
       admin.phoneNumber,
+      password,
+    );
+
+    return tokenRes;
+  }
+
+  async signInClient(phoneNumber: string, password: string) {
+    const user = await this.db.clientAccount.findUnique({
+      where: {
+        phoneNumber,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const tokenRes = await this.getToken(
+      user.user,
+      user.phoneNumber,
       password,
     );
 

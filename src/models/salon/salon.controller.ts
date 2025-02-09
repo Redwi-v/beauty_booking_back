@@ -81,13 +81,14 @@ export class SalonController {
 
   // ПОЛУЧИТЬ ПО ID
   @Get(':id')
-  @TokensDecorator(TokenNamesEnum.adminToken)
-  @UseGuards(AuthGuard)
   getById(
     @Param('id') salonId: number,
     @SessionInfo() session: GetSessionInfoDto,
+    @Query() params: GetByIdDto
   ) {
-    return this.salonService.getById(+salonId, session);
+
+    
+    return this.salonService.getById(+salonId, session, params);
   }
 
   // ПОЛУЧИТЬ МНОГО

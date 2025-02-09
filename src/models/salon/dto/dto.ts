@@ -16,12 +16,14 @@ export class GetAllSalonsDto {
     required: false,
   })
   search: string;
+
 }
 
 export class GetByIdDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  salonId: number;
+  @ApiProperty({
+    required: false,
+  })
+  onlyActiveBranches: string
 }
 
 export class DeleteSalonDto {

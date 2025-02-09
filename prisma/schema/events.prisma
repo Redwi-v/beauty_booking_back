@@ -1,0 +1,30 @@
+model Events {
+  id Int @id @default(autoincrement())
+
+  start    String
+  duration Int
+
+  title String
+
+  description String
+
+  master          MasterAccount @relation(fields: [masterAccountId], references: [id])
+  masterAccountId Int
+
+  salon   Salon @relation(fields: [salonId], references: [id])
+  salonId Int
+
+  salonBranch   SalonBranch @relation(fields: [salonBranchId], references: [id])
+  salonBranchId Int
+
+  services Service[]
+
+  clientNumber   String
+  clientName     String
+  clientLastName String
+  clientComment  String
+
+  client ClientAccount? @relation(fields: [clientAccountId], references: [id])
+
+  clientAccountId Int?
+}

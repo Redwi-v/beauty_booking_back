@@ -45,11 +45,7 @@ export class SalonBranchService {
   }
 
   async findAll(params: GetAllSalonBranchesDto) {
-    const { search, skip, take } = params;
-
-    console.log(skip);
-    console.log(take);
-    console.log(search);
+    const { search, skip, take, salonId, onlyActive } = params;
 
     const findManyPromise = this.db.salonBranch.findMany({
       take: take ? +take : undefined,
@@ -59,9 +55,13 @@ export class SalonBranchService {
           contains: search,
           mode: 'insensitive',
         },
+        isOpen: {
+          equals: onlyActive
+        },
+        salonId: +salonId,
       },
       orderBy: {
-        createdAt: 'asc',
+        createdAt: 'desc',
       },
     });
 
@@ -71,6 +71,10 @@ export class SalonBranchService {
           contains: search,
           mode: 'insensitive',
         },
+        isOpen: {
+          equals: onlyActive
+        },
+        salonId: +salonId,
       },
     });
 

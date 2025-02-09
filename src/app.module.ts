@@ -9,12 +9,15 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AuthService } from './auth/auth.service';
 import { FilesModule } from './files/files.module';
-import { DservicesModule } from './dservices/dservices.module';
 import { PaymentModule } from './payment/payment.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { SalonModule } from './models/salon/salon.module';
 import { SalonBranchModule } from './models/salon.branch/salon.branch.module';
 import { MasterModule } from './models/master/master.module';
+import { MasterScheduleModule } from './models/master.schedule/master.schedule.module';
+import { ServicesModule } from './models/services/services.module';
+import { ServiceTagsModule } from './models/service-tags/service-tags.module';
+import { EventsModule } from './models/events/events.module';
 
 const sessions = new LocalSession({ database: 'sessions_db.json' });
 @Module({
@@ -23,6 +26,7 @@ const sessions = new LocalSession({ database: 'sessions_db.json' });
       middlewares: [sessions.middleware()],
       token: '7184076234:AAEuUjeQBGtCyaa0yhBr6QK2pyFbVNZR77o',
     }),
+    EventsModule,
 
     DbModule,
 
@@ -32,7 +36,8 @@ const sessions = new LocalSession({ database: 'sessions_db.json' });
 
     FilesModule,
 
-    DservicesModule,
+    ServicesModule,
+    ServiceTagsModule,
 
     PaymentModule,
 
@@ -41,6 +46,7 @@ const sessions = new LocalSession({ database: 'sessions_db.json' });
     SalonModule,
     SalonBranchModule,
     MasterModule,
+    MasterScheduleModule,
   ],
 
   controllers: [AppController],

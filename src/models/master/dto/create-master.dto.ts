@@ -76,6 +76,22 @@ export class GetAllMastersDto {
     required: false,
   })
   salonBranchId?: string;
+
+  @ApiProperty()
+  salonId: number;
+
+  
+  @ApiProperty({
+    example: '2025-12-25',
+    required: false
+  })
+  date?: string;
+
+  @ApiProperty({
+    example: '12:30',
+    required: false
+  })
+  time?: string
 }
 
 export class removeItemsDto {

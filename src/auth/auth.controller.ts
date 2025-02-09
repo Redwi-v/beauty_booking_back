@@ -13,7 +13,9 @@ import {
   GetSessionInfoDto,
   ISendAuthKeyDto,
   SignInDto,
-  SinUpAdminDto,
+  SignUpAdminDto,
+  SignUpClientDto,
+  SignUpMasterDto,
 } from './dto/dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -23,6 +25,7 @@ import { AuthGuard } from './auth.guard';
 import { TokensDecorator } from './roles.decorator';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
+import { DbService } from 'src/db/db.service';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -31,6 +34,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly cookeService: CookieService,
     private readonly httpService: HttpService,
+    private db: DbService,
   ) {}
 
   private async checkKey(messageKey: string) {
@@ -52,7 +56,7 @@ export class AuthController {
   // ADMINS
   @Post('admin/sign-up')
   async signUpAdmin(
-    @Body() body: SinUpAdminDto,
+    @Body() body: SignUpAdminDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const widgetRes = await this.checkKey(body.messageKey);
@@ -92,7 +96,22 @@ export class AuthController {
     type: GetSessionInfoDto,
   })
   async getSessionInfo(@SessionInfo() session: GetSessionInfoDto) {
-    return session;
+
+    console.log(session.phoneNumber);
+    
+    let booking = await this.db.events.findMany({
+      where: {
+        clientNumber: session.phoneNumber
+      },
+      include: {
+        client: true,
+        services: true,
+        master: true,
+      }
+    }, 
+  );
+
+    return { ...session, bookingList: booking };
   }
 
   @Post('key/send')
@@ -110,7 +129,7 @@ export class AuthController {
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Basic ${ process.env.DGTL_WIDGET_AUTH }`,
+            Authorization: `Basic ${process.env.DGTL_WIDGET_AUTH}`,
           },
         },
       )
@@ -123,7 +142,41 @@ export class AuthController {
 
   @Post('client/sign-up')
   async signUpClient(
-    @Body() body: SinUpAdminDto,
+    @Body() body: SignUpClientDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken } = await this.authService.signUpClient(body);
+    this.cookeService.setToken(res, accessToken, TokenNamesEnum.clientToken);
+  }
+
+  @Post('client/sign-out')
+  @TokensDecorator()
+  @UseGuards(AuthGuard)
+  signOutClient(@Res({ passthrough: true }) res: Response) {
+    this.cookeService.removeToken(res, TokenNamesEnum.clientToken);
+  }
+
+  @Post('client/sign-in')
+  async signInClient(
+    @Body() body: SignInDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    console.log(body);
+
+    // const widgetRes = await this.checkKey(body.messageKey);
+
+    // if (widgetRes.data.status !== 'CONFIRMED') return;
+
+    const { accessToken } = await this.authService.signInClient(
+      body.phoneNumber,
+      body.password,
+    );
+    this.cookeService.setToken(res, accessToken, TokenNamesEnum.clientToken);
+  }
+
+  @Post('master/sign-up')
+  async signUpMaster(
+    @Body() body: SignUpMasterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken } = await this.authService.signUpClient(body);
