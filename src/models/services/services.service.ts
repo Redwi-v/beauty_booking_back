@@ -53,6 +53,7 @@ export class ServicesService {
         },
         name: { contains: search, mode: 'insensitive' },
       },
+      
     });
 
     const list = await this.db.service.findMany({
@@ -63,9 +64,9 @@ export class ServicesService {
           
           some: {
             id: +masterId || undefined,
-            salonBranch: {
+            salonBranch: salonId ?  {
               salonId: +salonId,
-            },
+            }: undefined,
           },
         },
         serviceTag: {
@@ -76,7 +77,12 @@ export class ServicesService {
       include: {
         bookingList: true,
         masterAccounts: true,
-        serviceTag: true,
+        serviceTag: {
+          include: {
+            services: true
+          }
+        },
+
       },
     });
 

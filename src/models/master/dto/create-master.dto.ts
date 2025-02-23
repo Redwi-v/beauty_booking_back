@@ -94,6 +94,17 @@ export class GetAllMastersDto {
   time?: string
 }
 
+export class FindEventsByDate {
+  @ApiProperty({
+    example: 21,
+  })
+  masterId: number
+  @ApiProperty({
+    example: new Date(),
+  })
+  date: Date
+}
+
 export class removeItemsDto {
   @ApiProperty({
     required: true,

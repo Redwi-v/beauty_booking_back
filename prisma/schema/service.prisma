@@ -1,7 +1,7 @@
 model Service {
   id Int @id @default(autoincrement())
 
-  masterAccounts MasterAccount[]
+  masterAccounts MasterAccount[] 
 
   serviceTag   ServiceTag? @relation(fields: [serviceTagId], references: [id])
   serviceTagId Int?
@@ -20,7 +20,7 @@ model Service {
 model ServiceTag {
   id Int @id @default(autoincrement())
 
-  salon   Salon @relation(fields: [salonId], references: [id])
+  salon   Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
   salonId Int
 
   name String

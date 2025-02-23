@@ -163,9 +163,9 @@ export class AuthController {
   ) {
     console.log(body);
 
-    // const widgetRes = await this.checkKey(body.messageKey);
+    const widgetRes = await this.checkKey(body.messageKey);
 
-    // if (widgetRes.data.status !== 'CONFIRMED') return;
+    if (widgetRes.data.status !== 'CONFIRMED') return;
 
     const { accessToken } = await this.authService.signInClient(
       body.phoneNumber,

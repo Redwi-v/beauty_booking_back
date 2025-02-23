@@ -18,6 +18,7 @@ export class UsersService {
       where: { userId: id },
       include: {
         subscription: true,
+        user: true
       },
     });
     console.log(user);

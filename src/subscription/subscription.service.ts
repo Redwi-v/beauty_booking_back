@@ -23,6 +23,9 @@ export class SubscriptionService {
   }
 
   async notificationHandler(body: INotification) {
+    console.log('GOOD');
+
+
     if (body.event === 'payment.waiting_for_capture') {
       const payment = await yooCheckout.capturePayment(body.object.id, {
         amount: body.object.amount,
@@ -31,6 +34,8 @@ export class SubscriptionService {
     }
 
     if (body.event === 'payment.succeeded') {
+
+      
       const transaction = await this.db.userTransactions.findUnique({
         where: {
           payId: body.object.id,
@@ -43,7 +48,7 @@ export class SubscriptionService {
 
       if ( !transaction  || !transaction.adminAccountUserId) throw new BadRequestException()
 
-      await this.db.adminAccount.update({
+      const product = await this.db.adminAccount.update({
         where: {
           userId: transaction.adminAccountUserId,
         },
@@ -52,7 +57,7 @@ export class SubscriptionService {
             connect: transaction?.product,
           },
           subscriptionStartDate: new Date(),
-          subscriptionEndDate: moment()
+          subscriptionEndDate: moment(new Date())
             .add({
               days: transaction?.product.durationDays,
               months: transaction?.product.durationMouths,
@@ -60,6 +65,19 @@ export class SubscriptionService {
             .toDate(),
         },
       });
+
+      console.log(product);
+      
+
+      console.log(transaction?.product.durationDays);
+      console.log(transaction?.product.durationMouths);
+      
+      console.log(moment()
+      .add({
+        days: transaction?.product.durationDays,
+        months: transaction?.product.durationMouths,
+      }).format('HH:mm DD MMMM YYYY'));
+      
     }
   }
 
@@ -74,6 +92,9 @@ export class SubscriptionService {
       where: {
         userId: userId,
       },
+      include: {
+        subscription: true
+      }
     });
 
     if (!product || !buyer)
@@ -94,6 +115,9 @@ export class SubscriptionService {
       },
       description: `Оплата подписки BeutyBooking ${product.title}`,
     });
+
+    console.log(product);
+    
 
     await this.db.userTransactions.create({
       data: {

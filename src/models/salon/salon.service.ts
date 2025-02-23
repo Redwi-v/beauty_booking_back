@@ -4,6 +4,7 @@ import { CreateSalonDto, UpdateSalonDto } from './dto/create.salon.dto';
 import { GetSessionInfoDto } from 'src/auth/dto/dto';
 import { GetAllSalonsDto, GetByIdDto } from './dto/dto';
 import { Prisma } from '@prisma/client';
+import { log } from 'console';
 
 @Injectable()
 export class SalonService {
@@ -55,6 +56,11 @@ export class SalonService {
   }
 
   deleteSalon(salonId: number | number[], session: GetSessionInfoDto) {
+
+    console.log('====================================');
+    console.log(salonId);
+    console.log('====================================');
+
     if (Array.isArray(salonId))
       return this.db.salon.deleteMany({
         where: {

@@ -1,6 +1,7 @@
 import { BadRequestException, Body, Injectable } from '@nestjs/common';
 import {
   CreateMasterDto,
+  FindEventsByDate,
   GetAllMastersDto,
   UpdateMasterDto,
 } from './dto/create-master.dto';
@@ -62,7 +63,7 @@ export class MasterService {
             equals: salonBranchId ? +salonBranchId : undefined,
           },
           salonBranch: {
-            salonId: +salonId
+            salonId: +salonId,
           },
           name: { contains: search, mode: 'insensitive' },
         },
@@ -74,7 +75,7 @@ export class MasterService {
             equals: salonBranchId ? +salonBranchId : undefined,
           },
           salonBranch: {
-            salonId: +salonId
+            salonId: +salonId,
           },
 
           name: { contains: search, mode: 'insensitive' },
@@ -158,9 +159,39 @@ export class MasterService {
     };
   }
 
+  async findEventsByDate (params: FindEventsByDate) {
+
+    const { date, masterId } = params 
+
+    return this.db.events.findMany({
+      where: {
+        master: {
+          id: +masterId
+        },
+        start: {
+          contains: moment(date).format('YYYY.MM.DD')
+        }
+      },
+      include: {
+        client: true,
+        master: true,
+        salon: true,
+        salonBranch: true,
+        services: true
+      }
+    })
+
+  }
+
   findOne(id: number) {
     return this.db.masterAccount.findUnique({
-      where: { id },
+      where: { id },include: {
+        salonBranch: {
+          include: {
+            salon: true
+          }
+        }
+      }
     });
   }
 
@@ -179,11 +210,13 @@ export class MasterService {
         speciality: body.speciality,
         telegramId: body.telegramId,
         canChangeBookingTime: body.canChangeBookingTime === 'true',
-        salonBranch: {
-          connect: {
-            id: body.salonBranchId ? +body.salonBranchId : undefined,
-          },
-        },
+        salonBranch: body.salonBranchId
+          ? {
+              connect: {
+                id: body.salonBranchId ? +body.salonBranchId : undefined,
+              },
+            }
+          : undefined,
       },
     });
   }
@@ -195,6 +228,22 @@ export class MasterService {
           in: Array.isArray(idArray) ? idArray.map((id) => +id) : [+idArray],
         },
       },
+    });
+  }
+
+  async finByTelegramId(id: string) {
+    return this.db.masterAccount.findUnique({
+      where: { 
+        telegramId: id,
+      },
+      include: {
+        salonBranch: {
+          include: {
+            salon: true
+          }
+        },
+        
+      }
     });
   }
 }

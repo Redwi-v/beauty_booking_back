@@ -13,6 +13,7 @@ import {
 import { MasterService } from './master.service';
 import {
   CreateMasterDto,
+  FindEventsByDate,
   GetAllMastersDto,
   removeItemsDto,
   UpdateMasterDto,
@@ -59,12 +60,12 @@ export class MasterController {
 
   @Get('telegram/:id')
   finByTelegram(@Param('id') id: string) {
-    // return this.masterService.findOne();
+    return this.masterService.finByTelegramId(id);
   }
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
+  @UseInterceptors( 
     FileInterceptor('avatar', {
       storage: diskStorage({
         destination: './uploads',
@@ -85,4 +86,13 @@ export class MasterController {
   remove(@Query() params: removeItemsDto) {
     return this.masterService.remove(params.idArray);
   }
+
+
+  @Get('/booking/find/byDate')
+  findByDate(
+    @Query() params: FindEventsByDate,
+  ) {
+    return this.masterService.findEventsByDate(params)
+  }
+  
 }

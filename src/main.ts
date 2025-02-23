@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookeParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 
 export enum appTypesEnum {
   'ADMIN' = 'ADMIN',
@@ -12,6 +13,8 @@ export enum appTypesEnum {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const theme = new SwaggerTheme();
 
   const config = new DocumentBuilder()
     .setTitle('BeautyBooking')
@@ -28,8 +31,9 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+  
 
-  SwaggerModule.setup('doc', app, document);
+  SwaggerModule.setup('doc', app, document, {explorer: true, customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK)});
   app.enableCors({ origin: true, credentials: true });
 
   app.use(cookeParser());
