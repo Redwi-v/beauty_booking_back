@@ -11,7 +11,7 @@ model Salon {
 
   branches   SalonBranch[]
   serviceTag ServiceTag[]
-  Events    Events[]
+  Events     Events[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -19,7 +19,7 @@ model Salon {
 
 model SalonBranch {
   id      Int             @id @default(autoincrement())
-  masters MasterAccount[] 
+  masters MasterAccount[]
 
   salon   Salon? @relation(fields: [salonId], references: [id], onDelete: Cascade)
   salonId Int?

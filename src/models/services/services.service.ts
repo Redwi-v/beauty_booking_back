@@ -136,12 +136,11 @@ export class ServicesService {
           disconnect: disconnectId?.map((id) => ({ id })),
           connect: mastersArrId?.map((id) => ({ id })),
         },
-        // serviceTag: {
-        //   connect: {
-        //     //@ts-ignore
-        //     id: updateServiceDto?.serviceTagId || undefined,
-        //   },
-        // },
+        serviceTag: {
+          connect: {
+            id: updateServiceDto?.serviceTagId || undefined,
+          },
+        },
       },
     });
   }
