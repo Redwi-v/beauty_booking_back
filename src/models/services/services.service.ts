@@ -97,7 +97,7 @@ export class ServicesService {
       where: {
         id: +id,
       },
-      include: {
+      include: {  
         bookingList: true,
         masterAccounts: true,
         serviceTag: true,
