@@ -13,7 +13,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { SessionInfo } from 'src/auth/session-info.decorator';
 import { GetSessionInfoDto } from 'src/auth/dto/dto';
-import { RegisterUser, UpdateUser } from './dto/dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -29,21 +28,19 @@ export class UsersController {
     return this.userService.getAdminProfile(session.id);
   }
 
-  @Post('add')
-  registerUser(@Body() data: RegisterUser) {
-    return this.userService.registerUser(data);
+  @Get('client/profile')
+  getProfileClient(@SessionInfo() session: GetSessionInfoDto) {
+    return this.userService.getClientProfile(session.id);
   }
+
+  // @Post('add')
+  // registerUser(@Body() data: RegisterUser) {}
 
   @Get('list')
-  getUser(@SessionInfo() session: GetSessionInfoDto) {
-    return this.userService.getUsers(session.id);
-  }
+  getUser(@SessionInfo() session: GetSessionInfoDto) {}
 
   @Patch(':id')
-  updateUser(@Param('id') userId: string, @Body() body: UpdateUser) {
-    return this.userService.UpdateUser(+userId, body);
-  }
-
+  // updateUser(@Param('id') userId: string, @Body() body: UpdateUser) {}
   @Delete(':id')
   deleteUser(@Param('id') userId: string) {
     return this.userService.DeleteUser(+userId);

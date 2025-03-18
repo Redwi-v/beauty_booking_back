@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model WorkingDay {
+  id Int @id @default(autoincrement())
+
+  day DateTime
+
+  MasterAccount   MasterAccount? @relation(fields: [masterAccountId], references: [id])
+  masterAccountId Int?
+
+  start String
+  end   String
+
+  freeTime String[]
+
+  allowedRecordingTime Int[]
+}
+
+model SubscriptionType {
+  id Int @id @default(autoincrement())
+
+  durationMouths Int
+  durationDays   Int
+
+  price Int
+
+  title    String
+  subTitle String
+
+  SalonOwnerAccount AdminAccount[]
+
+  isStartingSubscription Boolean?           @default(false)
+  userTransactions       userTransactions[]
+}
+
+model userTransactions {
+  payId  String @unique()
+  amount String
+
+  product            SubscriptionType @relation(fields: [subscriptionTypeId], references: [id])
+  subscriptionTypeId Int
+
+  SalonOwnerAccount  AdminAccount? @relation(fields: [adminAccountUserId], references: [userId])
+  adminAccountUserId Int?
+}

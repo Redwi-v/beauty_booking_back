@@ -1,53 +1,90 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsPhoneNumber, MinLength } from 'class-validator';
 
-export class SignUpBodyDto {
-  @ApiProperty({
-    example: 'test@gmail.com',
-  })
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({
-    example: '1234',
-  })
+export class SignUpUserDto {
+  @ApiProperty({ default: 'Hello1234' })
   @IsNotEmpty()
+  @MinLength(8)
   password: string;
 
-  @ApiProperty({
-    example: 'Andrey',
-  })
   @IsNotEmpty()
+  @ApiProperty({ default: 'Иван' })
   name: string;
 
-  @ApiProperty({
-    example: 'Sinitsyn',
-  })
   @IsNotEmpty()
+  @ApiProperty({ default: 'Иванович' })
   lastName: string;
-}
-export class SignUpMasterDto extends SignUpBodyDto {
-  @ApiProperty({
-    example: 'Manicur',
-  })
+
   @IsNotEmpty()
-  speciality: string;
+  @ApiProperty({ default: '+79212994200' })
+  phoneNumber: string;
 
-  telegramId?: string;
+  @IsNotEmpty()
+  @ApiProperty()
+  messageKey: string;
 }
 
-export class SignInBodyDto {
-  @ApiProperty({
-    example: 'test@gmail.com',
-  })
-  @IsNotEmpty()
-  email: string;
+export class SignUpAdminDto extends SignUpUserDto {}
+export class SignUpClientDto extends SignUpUserDto {}
+export class SignUpMasterDto extends SignUpUserDto {}
+// export class SignUpMasterDto {
 
-  @ApiProperty({
-    example: '1234',
-  })
+//   @ApiProperty({
+//     example: 1,
+//   })
+//   salonBranchId: number
+
+//   @ApiProperty()
+//   masterServicesId: number[]
+
+//   @ApiProperty()
+//   speciality: string
+//   @ApiProperty()
+//   about: string
+
+//   @ApiProperty()
+//   name: st
+
+//   @ApiProperty()
+//   lastName String
+
+//   @ApiProperty()
+//   avatar String?
+
+//   @ApiProperty()
+//   canChangeSchedule Boolean? @default(false)
+
+//   @ApiProperty()
+//   canChangeBookingTime Boolean? @default(false)
+
+//   @ApiProperty()
+//   telegramId String    @unique()
+
+//   @ApiProperty()
+//   Booking    Booking[]
+
+
+//   @ApiProperty()
+//   workingsDays WorkingDay[]
+
+
+//   @ApiProperty()
+//   salonBranch SalonBranch? @relation(fields: [salonBranchId], references: [id])
+// }
+
+export class SignInDto {
+  @ApiProperty({ default: 'Hello1234' })
   @IsNotEmpty()
   password: string;
+
+  @IsPhoneNumber()
+  @IsNotEmpty()
+  @ApiProperty({ default: '+79212994200' })
+  phoneNumber: string;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  messageKey: string;
 }
 
 export class GetSessionInfoDto {
@@ -55,11 +92,17 @@ export class GetSessionInfoDto {
   id: number;
 
   @ApiProperty()
-  email: string;
+  phoneNumber: string;
 
   @ApiProperty()
   iat: number;
 
   @ApiProperty()
   exp: number;
+}
+
+export class ISendAuthKeyDto {
+  @IsNotEmpty()
+  @ApiProperty()
+  key: string;
 }
