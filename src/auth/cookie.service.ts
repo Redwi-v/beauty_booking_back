@@ -11,7 +11,7 @@ export class CookieService {
   setToken(res: Response, token: string, tokenKey: TokenNamesEnum) {
     res.cookie(tokenKey, token, {
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000 * 10,
       sameSite: 'none',
       secure: true,
     });

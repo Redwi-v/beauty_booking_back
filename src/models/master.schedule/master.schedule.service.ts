@@ -87,10 +87,11 @@ export class MasterScheduleService {
 
     }
 
+
     const events = masterId
       ? await this.db.events.findMany({
           where: {
-            start: { contains: date },
+            start: { contains: moment(date).format('YYYY.MM.DD') },
             masterAccountId: +masterId,
             id: {
               not: +activeEventId || undefined,
@@ -98,6 +99,11 @@ export class MasterScheduleService {
           },
         })
       : null;
+
+
+      console.log('====================================');
+      console.log(moment(date).format('YYYY.MM.DD'));
+      console.log('====================================');
 
     //@ts-ignore
     const momentDate = date
@@ -156,6 +162,11 @@ export class MasterScheduleService {
         return true;
       });
     });
+
+
+    console.log('====================================');
+    console.log(events);
+    console.log('====================================');
 
     events &&
       events.map((event) => {
